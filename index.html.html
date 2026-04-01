@@ -1,0 +1,2261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DupiHub — Controle de Verba Regional 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--sf:#1a1d27;--sf2:#222638;--bd:#2d3154;--ac:#1d9e75;--ac2:#185fa5;--am:#ba7517;--rd:#c62828;--wh:#f0f2ff;--mu:#8890b0}
+body{background:var(--bg);color:var(--wh);font-family:Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+.hdr{background:#0d1128;border-bottom:1px solid var(--bd);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100}
+.logo{font-size:1.05rem;font-weight:700;color:var(--ac)}.logo span{color:var(--wh)}
+.hsub{font-size:.72rem;color:var(--mu)}
+.hbtns{display:flex;align-items:center;gap:.5rem}
+.hbtns span{font-size:.7rem;color:var(--mu)}
+.xb{background:var(--sf2);border:1px solid var(--bd);color:var(--mu);font-size:.71rem;padding:.3rem .65rem;border-radius:5px;cursor:pointer;transition:all .2s}.xb:hover{color:var(--wh);border-color:var(--ac)}
+.nav{display:flex;gap:.3rem;padding:.65rem 1.5rem 0;border-bottom:1px solid var(--bd);background:var(--sf);overflow-x:auto}
+.nb{background:none;border:none;color:var(--mu);font-size:.82rem;padding:.48rem .9rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;border-radius:4px 4px 0 0;white-space:nowrap}
+.vnb{background:none;border:none;color:var(--mu);font-size:.78rem;padding:.38rem .8rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;border-radius:4px 4px 0 0;white-space:nowrap}
+.vnb.on{color:var(--ac);border-bottom-color:var(--ac);background:var(--sf2)}
+.vnb:hover{color:var(--wh)}
+.nb:hover{color:var(--wh);background:var(--sf2)}.nb.on{color:var(--ac);border-bottom-color:var(--ac);background:var(--sf2);font-weight:600}
+.pg{display:none;padding:1.2rem 1.5rem 2rem;flex:1}.pg.on{display:block!important}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:.85rem;margin-bottom:1.3rem}
+.kpi{background:var(--sf);border:1px solid var(--bd);border-radius:9px;padding:.85rem 1rem}
+.kl{font-size:.67rem;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.32rem}
+.kv{font-size:1.35rem;font-weight:700}.ks{font-size:.68rem;color:var(--mu);margin-top:.22rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem}
+.g1{display:grid;grid-template-columns:1fr;gap:1rem;margin-bottom:1rem}
+.cc{background:var(--sf);border:1px solid var(--bd);border-radius:9px;padding:1rem}
+.ct{font-size:.72rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.8rem}
+.gg{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1rem}
+.gc{background:var(--sf);border:1px solid var(--bd);border-radius:9px;padding:.9rem;text-align:center}
+.gt{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem}
+.gp{font-size:1.2rem;font-weight:700}
+.gd{font-size:.65rem;color:var(--mu);margin-top:.18rem;line-height:1.5}
+.pb{height:7px;background:var(--sf2);border-radius:4px;overflow:hidden;margin-top:.3rem}
+.pf{height:100%;border-radius:4px}
+.dt{width:100%;border-collapse:collapse;font-size:.77rem;table-layout:fixed}
+.dt th{background:var(--sf2);color:var(--mu);padding:.48rem .6rem;text-align:left;font-size:.67rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--bd);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.dt td{padding:.48rem .6rem;border-bottom:1px solid var(--bd);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+.dt td:last-child{overflow:visible;white-space:nowrap;padding:.3rem .4rem}.dt tr:hover td{background:var(--sf2)}
+.nr{text-align:right}
+.bx{display:inline-block;padding:.1rem .42rem;border-radius:20px;font-size:.63rem;font-weight:600}
+.b-resp{background:#1e3a8a22;color:#93c5fd;border:1px solid #1e40af44}
+.b-derma{background:#065f4622;color:#6ee7b7;border:1px solid #065f4644}
+.b-rhyno{background:#5b21b622;color:#c4b5fd;border:1px solid #5b21b644}
+.b-gastro{background:#92400e22;color:#fcd34d;border:1px solid #92400e44}
+.b-planejado{background:#185fa522;color:#93c5fd;border:1px solid #185fa544}
+.b-pago{background:#1d9e7522;color:#6ee7b7;border:1px solid #1d9e7544}
+.b-adiado{background:#ba751722;color:#fcd34d;border:1px solid #ba751744}
+.b-cancelado{background:#c6282822;color:#fca5a5;border:1px solid #c6282844}
+.stit{font-size:.7rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin:1.2rem 0 .7rem;padding-left:.5rem;border-left:3px solid var(--ac)}
+.ef{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:.8rem;padding:1rem;background:var(--sf);border:1px solid var(--bd);border-radius:9px;margin-bottom:1rem}
+.ef label{font-size:.68rem;color:var(--mu);display:block;margin-bottom:.25rem}
+.ef input,.ef select{width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:5px;padding:.42rem .6rem;color:var(--wh);font-size:.79rem;outline:none}
+.ef input:focus,.ef select:focus{border-color:var(--ac)}
+.ef select:disabled{opacity:.32;cursor:not-allowed}
+.btn{background:var(--ac);color:#fff;border:none;border-radius:6px;padding:.44rem .9rem;font-size:.79rem;font-weight:600;cursor:pointer}.btn:hover{background:#0f6e56}
+.btn2{background:var(--sf2);color:var(--mu);border:1px solid var(--bd)}.btn2:hover{color:var(--wh);border-color:var(--ac)}
+.eb{color:#fff;border:none;border-radius:5px;padding:.4rem .8rem;font-size:.74rem;font-weight:600;cursor:pointer}
+footer{background:var(--sf);border-top:1px solid var(--bd);text-align:center;padding:.6rem;font-size:.68rem;color:var(--mu)}
+footer strong{color:var(--ac)}
+@media(max-width:860px){.g2,.g3{grid-template-columns:1fr}.gg{grid-template-columns:1fr 1fr}.pg{padding:.9rem}}
+@media print{.hdr,.nav,.btn,.eb{display:none!important}.pg{display:block!important;padding:0}body{background:white;color:black}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div><div class="logo">DUPI<span>HUB</span></div><div class="hsub">Controle de Verba Regional 2026 — GR Marlon Costa</div></div>
+  <div class="hbtns">
+    <!-- GLOBAL LOCK BADGE -->
+    <div id="globalBadge" onclick="showGlobalPwModal()" title="Clique para desbloquear o app"
+      style="display:flex;align-items:center;gap:.35rem;background:#c6282815;border:1px solid #c6282844;border-radius:20px;padding:.28rem .7rem;cursor:pointer;transition:all .2s;margin-right:.4rem">
+      <span id="globalLockIcon" style="font-size:.9rem">&#128274;</span>
+      <span id="globalLockLabel" style="font-size:.68rem;font-weight:600;color:#fca5a5;white-space:nowrap">Bloqueado</span>
+    </div>
+    <button class="xb" onclick="setApiUrl()" id="apiBtn" style="border-color:#ba7517;color:#ba7517">&#128279; Conectar API</button>
+    <span style="margin-left:.3rem">Exportar:</span>
+    <button class="xb" onclick="exportPDF()">&#8595; PDF</button>
+    <button class="xb" onclick="exportExcel()">&#8595; Excel</button>
+    <button class="xb" onclick="exportWord()">&#8595; Word</button>
+  </div>
+</div>
+
+<!-- GLOBAL PASSWORD MODAL -->
+<div id="globalPwModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000000bb;z-index:99999;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:var(--sf);border:2px solid var(--ac);border-radius:16px;padding:2rem;width:100%;max-width:360px;text-align:center;box-shadow:0 0 60px #1d9e7533">
+    <div style="font-size:2.8rem;margin-bottom:.6rem">&#128274;</div>
+    <div style="font-size:1.05rem;font-weight:700;color:var(--wh);margin-bottom:.3rem">DupiHub</div>
+    <div style="font-size:.8rem;color:var(--mu);margin-bottom:1.3rem">Digite a senha para acessar o aplicativo.<br>Não será necessário digitar novamente neste dispositivo.</div>
+    <input type="password" id="globalPwInput" placeholder="Digite a senha..."
+      style="width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:7px;padding:.55rem .8rem;color:var(--wh);font-size:.9rem;outline:none;margin-bottom:.7rem;text-align:center;letter-spacing:.1em"
+      onkeydown="if(event.key==='Enter') checkGlobalPassword()">
+    <div id="globalPwError" style="font-size:.73rem;color:#c62828;margin-bottom:.6rem;display:none">&#10005; Senha incorreta. Tente novamente.</div>
+    <button class="btn" onclick="checkGlobalPassword()" style="width:100%;padding:.55rem;font-size:.88rem">&#128275; Acessar</button>
+    <div style="font-size:.62rem;color:var(--mu);margin-top:.9rem">Sanofi Dupixent 2026</div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nb on" onclick="showPage('dash',this)">Dashboard</button>
+  <button class="nb" onclick="showPage('graf',this)">Gráficos</button>
+  <button class="nb" onclick="showPage('cons',this)">Consultores</button>
+  <button class="nb" onclick="showPage('lanc',this)">Lançar Verba</button>
+  <button class="nb" onclick="showPage('viag',this)">Agendar Viagens</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="pg-dash" class="pg on">
+  <div class="app-blur"><div class="kgrid" style="margin-top:1rem">
+    <div class="kpi"><div class="kl">Orçamento Total</div><div class="kv" style="color:var(--wh)" id="k-orc">—</div><div class="ks">4 franquias</div></div>
+    <div class="kpi"><div class="kl">Total Pago</div><div class="kv" style="color:var(--ac)" id="k-pago">—</div><div class="ks" id="k-pago-p">—</div></div>
+    <div class="kpi"><div class="kl">Total Planejado</div><div class="kv" style="color:var(--am)" id="k-plan">—</div><div class="ks" id="k-plan-p">—</div></div>
+    <div class="kpi"><div class="kl">Comprometido</div><div class="kv" style="color:var(--ac2)" id="k-comp">—</div><div class="ks" id="k-comp-p">—</div></div>
+    <div class="kpi"><div class="kl">Saldo Disponível</div><div class="kv" style="color:var(--ac)" id="k-saldo">—</div><div class="ks" id="k-saldo-p">—</div></div>
+    <div class="kpi"><div class="kl">Lançamentos</div><div class="kv" style="color:var(--wh)" id="k-nlanc">—</div><div class="ks">registros</div></div>
+  </div>
+  <div class="stit">Velocímetros por Franquia</div>
+  <div class="gg" id="gauges"></div>
+  <div class="stit">Acompanhamento de Verba</div>
+  <div class="g1"><div class="cc"><div class="ct">Pago · Comprometido · Saldo por Franquia</div><div style="height:215px"><canvas id="cWater"></canvas></div></div></div>
+  <div class="g2">
+    <div class="cc"><div class="ct">Pago × Planejado por Trimestre</div><div style="height:195px"><canvas id="cQtr"></canvas></div></div>
+    <div class="cc"><div class="ct">Comprometido por Franquia</div><div style="height:195px"><canvas id="cPie1"></canvas></div></div>
+  </div>
+  <div class="stit">Lançamentos por Tipo de Investimento</div>
+  <div class="g3">
+    <div class="cc"><div class="ct">Tipo × Franquia</div><div style="height:185px"><canvas id="cTF"></canvas></div></div>
+    <div class="cc"><div class="ct">Tipo × Consultor</div><div style="height:185px"><canvas id="cTC"></canvas></div></div>
+    <div class="cc"><div class="ct">Tipo × Indicação</div><div style="height:185px"><canvas id="cTI"></canvas></div></div>
+  </div>
+  <div class="stit">Status por Franquia × Quarter</div>
+  <div class="g2">
+    <div class="cc"><div class="ct">Status × Quarter — Valor (R$)</div><div style="height:195px"><canvas id="cSQ"></canvas></div></div>
+    <div class="cc"><div class="ct">Status × Franquia — Qtd</div><div style="height:195px"><canvas id="cSF"></canvas></div></div>
+  </div>
+
+  <!-- CALENDÁRIO DE EVENTOS -->
+  <div class="stit" style="margin-top:1.5rem">Calendário de Speaker Meetings & Eventos</div>
+  <div class="cc" style="padding:1rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <button onclick="calMes(-1)" style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:5px;padding:.28rem .7rem;cursor:pointer;font-size:.9rem">◀</button>
+        <span id="calMesLabel" style="font-weight:700;color:var(--wh);min-width:140px;text-align:center;font-size:.9rem"></span>
+        <button onclick="calMes(+1)" style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:5px;padding:.28rem .7rem;cursor:pointer;font-size:.9rem">▶</button>
+      </div>
+      <div style="display:flex;gap:.8rem;font-size:.68rem;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:.3rem"><span style="width:10px;height:10px;border-radius:50%;background:#185fa5;display:inline-block"></span>Speaker Meeting</span>
+        <span style="display:flex;align-items:center;gap:.3rem"><span style="width:10px;height:10px;border-radius:50%;background:#c62828;display:inline-block"></span>Coffee Break</span>
+        <span style="display:flex;align-items:center;gap:.3rem"><span style="width:10px;height:10px;border-radius:50%;background:#ba7517;display:inline-block"></span>Apoio</span>
+      </div>
+    </div>
+    <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;font-size:.7rem"></div>
+    <div id="calEventList" style="margin-top:1rem;font-size:.78rem"></div>
+  </div>
+</div></div>
+
+<!-- GRÁFICOS -->
+<div id="pg-graf" class="pg">
+  <div class="app-blur">
+  <div class="stit" style="margin-top:1rem">Distribuição por Franquia</div>
+  <div class="g2">
+    <div class="cc"><div class="ct">Pago × Planejado por Franquia</div><div style="height:215px"><canvas id="cBarH"></canvas></div></div>
+    <div class="cc"><div class="ct">Distribuição % — Donut</div><div style="height:215px"><canvas id="cDonut"></canvas></div></div>
+  </div>
+  <div class="stit">Evolução Mensal</div>
+  <div class="g1"><div class="cc"><div class="ct">Evolução Mensal por Franquia</div><div style="height:200px"><canvas id="cLine"></canvas></div></div></div>
+  <div class="stit">Termômetro de Consumo</div>
+  <div class="cc"><div class="ct">% Utilizado vs Orçamento (Pago + Planejado)</div><div id="thermo"></div></div>
+</div></div>
+
+<!-- CONSULTORES -->
+<div id="pg-cons" class="pg">
+  <div class="app-blur">
+  <div class="stit" style="margin-top:1rem">Resumo por Consultor</div>
+
+  <!-- Gráfico 1: Pago x Planejado por Consultor -->
+  <div class="cc" style="margin-bottom:1rem">
+    <div class="ct">Pago × Planejado por Consultor — % da Verba Total Disponível</div>
+    <div style="height:260px"><canvas id="cCons"></canvas></div>
+  </div>
+
+  <!-- Gráfico 2: Dispersão 3D - Investimento por Consultor -->
+  <div class="stit">Investimento por Consultor vs Verba da Franquia</div>
+  <div class="cc" style="margin-bottom:1rem">
+    <div class="ct">Dispersão — tamanho da bola proporcional ao investimento (Pago + Planejado)</div>
+    <div style="height:300px"><canvas id="cBubble"></canvas></div>
+  </div>
+
+  <!-- Gráfico 3: Previsibilidade de estouro -->
+  <div class="stit">Previsibilidade de Estouro de Verba</div>
+  <div class="cc" style="margin-bottom:1rem">
+    <div class="ct">Burn Rate Mensal — Speaker Meetings + RN (linha de projeção indica quando a verba acaba)</div>
+    <div style="height:260px"><canvas id="cBurnRate"></canvas></div>
+    <div id="burnInfo" style="font-size:.75rem;color:var(--mu);margin-top:.6rem;padding:.5rem;background:var(--sf2);border-radius:6px"></div>
+  </div>
+
+  <!-- Tabela -->
+  <div class="stit">Tabela por Consultor</div>
+  <div class="cc" style="overflow-x:auto">
+    <table class="dt" id="tCons"></table>
+  </div>
+</div></div>
+
+<!-- LANÇAR VERBA -->
+<div id="pg-lanc" class="pg">
+  <div class="stit" style="margin-top:1rem">&#128274; Budget por Franquia <span style="font-weight:400;font-size:.65rem;color:var(--mu);text-transform:none;letter-spacing:0" id="lockStatus">— bloqueado</span></div>
+  <div class="ef" id="orcForm"></div>
+
+  <div id="storeBanner" style="font-size:.72rem;color:#1d9e75;background:#1d9e7515;border:1px solid #1d9e7533;border-radius:6px;padding:.45rem .8rem;margin-bottom:.6rem;display:block"></div>
+
+  <!-- ══ LANÇAR REFEIÇÃO DE NEGÓCIOS ══ -->
+  <div class="stit">Lançar Refeição de Negócios <span style="font-size:.62rem;color:var(--mu);font-weight:400;text-transform:none">— campos com <span style="color:#c62828">*</span> são obrigatórios</span></div>
+
+  <div id="lancForm">
+  <div class="ef">
+    <div><label>Gerente Regional <span style="color:#c62828">*</span></label>
+      <select id="e-ger"><option value="">Selecione...</option>
+        <option>Marlon Costa</option><option>Carla Moraes</option><option>Jefferson Souza</option>
+        <option>José Júnior</option><option>Emerson Silva</option><option>Alexandre Poças</option>
+      </select></div>
+    <div><label>Consultor (CSA) <span style="color:#c62828">*</span></label>
+      <select id="e-cons"><option value="">Selecione...</option>
+        <option>Regional</option>
+        <option>Angélica Silva</option><option>Elaíne Azevedo</option><option>Tassia Novais</option>
+        <option>Silvia Cunha</option><option>Greice Morais</option><option>Caroline Pereira</option>
+        <option>Vagner Elias</option><option>Eduardo Reis</option><option>Eduardo de Deus</option>
+        <option>Rafaela Correa</option><option>Dayane Olivieri</option>
+      </select></div>
+    <div><label>Indicação <span style="color:#c62828">*</span></label>
+      <select id="e-ind" onchange="autoFra()"><option value="">Selecione...</option>
+        <option>Asma</option><option>DPOC</option><option>DA</option>
+        <option>PN</option><option>UCE</option><option>EoE</option><option>NP</option>
+      </select></div>
+    <div><label>Franquia <span style="color:#1d9e75;font-size:.68rem">(auto)</span></label>
+      <select id="e-fra"><option value="">— automático —</option>
+        <option>Resp</option><option>Derma</option><option>Rhyno</option><option>Gastro</option>
+      </select></div>
+    <div><label>Tipo de RN <span style="color:#c62828">*</span></label>
+      <select id="e-tipo"><option value="">Selecione...</option>
+        <option>Almoço</option><option>Jantar</option><option>Café</option>
+      </select></div>
+    <div><label>Verba — OI <span style="color:#c62828">*</span></label>
+      <select id="e-vrb"><option value="">Selecione...</option>
+        <option>Verba Regional</option><option>Verba Marketing</option><option>Verba Mista Aporte Regional</option>
+      </select></div>
+    <div><label>Médico Engajado <span style="color:#c62828">*</span></label>
+      <input type="text" id="e-med" placeholder="Nome do médico"></div>
+    <div><label>Mês <span style="color:#c62828">*</span></label>
+      <select id="e-mes" onchange="autoDate('e-dat','e-mes')"><option value="">Selecione...</option>
+        <option>Janeiro</option><option>Fevereiro</option><option>Março</option><option>Abril</option>
+        <option>Maio</option><option>Junho</option><option>Julho</option><option>Agosto</option>
+        <option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option>
+      </select></div>
+    <div><label>Data <span style="color:#c62828">*</span></label><input type="date" id="e-dat"></div>
+    <div><label>Valor Total (R$) <span style="color:#c62828">*</span></label>
+      <input type="number" id="e-val" placeholder="0.00" step="0.01"></div>
+    <div style="display:flex;align-items:flex-end;gap:.45rem;flex-wrap:wrap">
+      <button class="btn" onclick="addLanc()">&#10003; Lançar RN</button>
+      <button class="btn btn2" onclick="resetSessao()">Resetar</button>
+    </div>
+  </div>
+  </div><!-- end lancForm -->
+
+  <!-- ══ LANÇAR EVENTOS E APOIOS ══ -->
+  <div class="stit" style="margin-top:1.5rem">Lançar Eventos e Apoios <span style="font-size:.62rem;color:var(--mu);font-weight:400;text-transform:none">— campos com <span style="color:#c62828">*</span> são obrigatórios</span></div>
+  <div class="ef">
+    <div><label>Gerente Regional <span style="color:#c62828">*</span></label>
+      <select id="ev-ger"><option value="">Selecione...</option>
+        <option>Marlon Costa</option><option>Carla Moraes</option><option>Jefferson Souza</option>
+        <option>José Júnior</option><option>Emerson Silva</option><option>Alexandre Poças</option>
+      </select></div>
+    <div><label>Consultor (CSA) <span style="color:#c62828">*</span></label>
+      <select id="ev-cons"><option value="">Selecione...</option>
+        <option>Regional</option>
+        <option>Angélica Silva</option><option>Elaíne Azevedo</option><option>Tassia Novais</option>
+        <option>Silvia Cunha</option><option>Greice Morais</option><option>Caroline Pereira</option>
+        <option>Vagner Elias</option><option>Eduardo Reis</option><option>Eduardo de Deus</option>
+        <option>Rafaela Correa</option><option>Dayane Olivieri</option>
+      </select></div>
+    <div><label>Indicação <span style="color:#c62828">*</span></label>
+      <select id="ev-ind" onchange="autoFraEv()"><option value="">Selecione...</option>
+        <option>Asma</option><option>DPOC</option><option>DA</option>
+        <option>PN</option><option>UCE</option><option>EoE</option><option>NP</option>
+      </select></div>
+    <div><label>Franquia <span style="color:#1d9e75;font-size:.68rem">(auto)</span></label>
+      <select id="ev-fra"><option value="">— automático —</option>
+        <option>Resp</option><option>Derma</option><option>Rhyno</option><option>Gastro</option>
+      </select></div>
+    <div><label>Status <span style="color:#c62828">*</span></label>
+      <select id="ev-sts" onchange="onEvSts()"><option value="">Selecione...</option>
+        <option>Planejado</option><option>Pago</option><option>Adiado</option><option>Cancelado</option>
+      </select></div>
+    <div><label>Tipo de Investimento <span style="color:#c62828">*</span></label>
+      <select id="ev-tipo" onchange="onEvTipo()"><option value="">Selecione...</option>
+        <option>Speaker Meetings</option><option>Coffee Break</option>
+        <option>Apoio Sociedade</option><option>Apoio Prestador</option>
+      </select></div>
+    <div><label>Tipo de Apoio</label>
+      <select id="ev-tap"><option value="">Selecione...</option>
+        <option>Jornada Regional</option><option>Congresso Local</option><option>Type 2 Dive</option>
+        <option>Evento Prestador</option><option>Cota Patrocínio</option><option>Simpósio Sociedade</option>
+        <option>Simpósio Prestador</option><option>Type 2 Ped</option>
+        <option>Evento Sociedade</option><option>Jornada Itinerante</option>
+        <option>Aula Mensal Sociedade</option><option>Outros</option>
+      </select></div>
+    <div><label>Sociedade</label>
+      <select id="ev-soc"><option value="">Selecione...</option>
+        <option>ABORL-RJ</option><option>ABORL-ES</option><option>ASBAI-RJ</option><option>ASBAI-ES</option>
+        <option>SOPTERJ</option><option>SPES</option><option>SBD-RJ</option><option>SBD-ES</option>
+        <option>GASTRO-RJ</option><option>GASTRO-ES</option><option>SBP-RJ</option><option>SBP-ES</option>
+        <option>OUTRAS</option>
+      </select></div>
+    <div><label>Nome do Prestador</label>
+      <input type="text" id="ev-prest" placeholder="Nome do prestador" disabled style="opacity:.35;cursor:not-allowed"></div>
+    <div><label>Qtd de HCPs</label>
+      <select id="ev-hcps" disabled style="opacity:.35;cursor:not-allowed"><option value="">—</option>
+        <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+        <option>10</option><option>11</option><option>12</option><option>13</option><option>14</option>
+        <option>15</option><option>16</option><option>17</option><option>18</option><option>19</option>
+        <option>20</option><option>21</option><option>22</option><option>23</option><option>24</option>
+        <option>25</option>
+      </select></div>
+    <div><label>Qtd de Palestrantes</label>
+      <select id="ev-palest" disabled style="opacity:.35;cursor:not-allowed" onchange="calcEvVal()"><option value="">—</option>
+        <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+        <option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+      </select></div>
+    <div><label>Verba — OI <span style="color:#c62828">*</span></label>
+      <select id="ev-vrb"><option value="">Selecione...</option>
+        <option>Verba Regional</option><option>Verba Marketing</option><option>Verba Mista Aporte Regional</option>
+      </select></div>
+    <div><label>Médico Engajado</label>
+      <input type="text" id="ev-med" placeholder="Nome do médico"></div>
+    <div><label>Mês <span style="color:#c62828">*</span></label>
+      <select id="ev-mes" onchange="autoDate('ev-dat','ev-mes')"><option value="">Selecione...</option>
+        <option>Janeiro</option><option>Fevereiro</option><option>Março</option><option>Abril</option>
+        <option>Maio</option><option>Junho</option><option>Julho</option><option>Agosto</option>
+        <option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option>
+      </select></div>
+    <div><label>Data <span style="color:#c62828">*</span></label>
+      <input type="date" id="ev-dat" required></div>
+    <div><label>Valor Total (R$) <span style="color:#c62828">*</span></label>
+      <input type="number" id="ev-val" placeholder="0.00" step="0.01">
+      <div id="ev-val-hint" style="font-size:.65rem;color:var(--ac);margin-top:.2rem;display:none"></div>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:.45rem;flex-wrap:wrap">
+      <button class="btn" style="background:#185fa5" onclick="addEvento()">&#10003; Lançar Evento</button>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem">
+    <div class="stit" style="margin:0">Registros (histórico + sessão)</div>
+    <div style="display:flex;gap:.4rem">
+      <button class="eb" style="background:#065f46" onclick="exportExcel()">&#8595; Excel</button>
+      <button class="eb" style="background:#1d4ed8" onclick="exportWord()">&#8595; Word</button>
+      <button class="eb" style="background:#c62828" onclick="exportPDF()">&#8595; PDF</button>
+    </div>
+  </div>
+  <!-- FILTRO POR CONSULTOR -->
+  <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;flex-wrap:wrap">
+    <label style="font-size:.75rem;color:var(--mu);white-space:nowrap">🔍 Filtrar por Consultor:</label>
+    <select id="filtroConsultor" onchange="renderLanc()"
+      style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:6px;padding:.3rem .6rem;font-size:.78rem;min-width:180px">
+      <option value="">— Todos os consultores —</option>
+      <option>Regional</option>
+      <option>Angélica Silva</option><option>Elaíne Azevedo</option><option>Tassia Novais</option>
+      <option>Silvia Cunha</option><option>Greice Morais</option><option>Caroline Pereira</option>
+      <option>Vagner Elias</option><option>Eduardo Reis</option><option>Eduardo de Deus</option>
+      <option>Rafaela Correa</option><option>Dayane Olivieri</option>
+    </select>
+    <span id="filtroInfo" style="font-size:.72rem;color:var(--mu)"></span>
+    <button onclick="limparFiltroConsultor()" id="btnLimparFiltro"
+      style="display:none;background:#c6282815;border:1px solid #c6282833;color:#fca5a5;border-radius:5px;padding:.25rem .6rem;font-size:.72rem;cursor:pointer">
+      ✕ Limpar filtro
+    </button>
+  </div>
+  <div class="cc" style="overflow-x:auto">
+    <table class="dt" id="tLanc">
+      <colgroup>
+        <col style="width:130px">
+        <col style="width:68px">
+        <col style="width:65px">
+        <col style="width:130px">
+        <col style="width:100px">
+        <col style="width:130px">
+        <col style="width:75px">
+        <col style="width:68px">
+        <col style="width:85px">
+        <col style="width:72px">
+      </colgroup>
+      <thead><tr>
+        <th>Consultor</th><th>Indicação</th><th>Franquia</th>
+        <th>Tipo</th><th>Prestador/Soc</th>
+        <th>Médico</th><th>Status</th><th>Mês</th>
+        <th class="nr">Valor (R$)</th><th>Ações</th>
+      </tr></thead>
+      <tbody id="tLancBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer>Made by <strong>Marlon Costa</strong> &nbsp;·&nbsp; DupiHub v2.0 &nbsp;·&nbsp; Dupixent 2026</footer>
+
+<!-- AGENDA DE VIAGENS -->
+<div id="pg-viag" class="pg">
+
+  <!-- BLOCO 1: FORMULÁRIO -->
+  <div class="stit" style="margin-top:1rem">Lançar Viagem</div>
+  <div class="ef">
+
+    <div><label>Consultor <span style="color:#c62828">*</span></label>
+      <select id="vg-cons">
+        <option value="">Selecione...</option>
+        <option>Angélica Silva</option><option>Elaíne Azevedo</option><option>Tassia Novais</option>
+        <option>Silvia Cunha</option><option>Greice Morais</option><option>Caroline Pereira</option>
+        <option>Vagner Elias</option><option>Eduardo Reis</option><option>Eduardo de Deus</option>
+        <option>Rafaela Correa</option><option>Dayane Olivieri</option>
+      </select>
+    </div>
+
+    <div><label>Gerente Regional <span style="color:#c62828">*</span></label>
+      <select id="vg-ger">
+        <option value="">Selecione...</option>
+        <option>Marlon Costa</option><option>Carla Moraes</option><option>Jefferson Souza</option>
+        <option>José Júnior</option><option>Emerson Silva</option><option>Alexandre Poças</option>
+      </select>
+    </div>
+
+    <div><label>IDA <span style="color:#c62828">*</span></label>
+      <input type="date" id="vg-ida" onchange="calcDiasViag()">
+    </div>
+
+    <div><label>Retorno <span style="color:#c62828">*</span></label>
+      <input type="date" id="vg-ret" onchange="calcDiasViag()">
+    </div>
+
+    <div><label>Dias <span style="color:#1d9e75;font-size:.67rem">(automático)</span></label>
+      <input type="number" id="vg-dias" readonly placeholder="— calculado automaticamente —"
+        style="opacity:.65;cursor:default;background:var(--sf2)">
+    </div>
+
+    <div><label>UF <span style="color:#c62828">*</span></label>
+      <select id="vg-uf" onchange="onUfChange()">
+        <option value="">Selecione...</option>
+        <option>AC</option><option>AL</option><option>AM</option><option>AP</option>
+        <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+        <option>GO</option><option>MA</option><option>MG</option><option>MS</option>
+        <option>MT</option><option>PA</option><option>PB</option><option>PE</option>
+        <option>PI</option><option>PR</option><option>RJ</option><option>RN</option>
+        <option>RO</option><option>RR</option><option>RS</option><option>SC</option>
+        <option>SE</option><option>SP</option><option>TO</option>
+      </select>
+    </div>
+
+    <div><label id="vg-cid-label">Cidade</label>
+      <select id="vg-cid" disabled style="opacity:.4;cursor:not-allowed">
+        <option value="">— selecione RJ ou ES para ver cidades —</option>
+      </select>
+    </div>
+
+    <div><label>Tipo de Viagem</label>
+      <select id="vg-tipo" onchange="onVgTipoChange()">
+        <option value="">Selecione...</option>
+        <option>Visitação Médica</option>
+        <option>Congresso</option>
+        <option>Reunião</option>
+        <option>Treinamento</option>
+      </select>
+    </div>
+
+    <div><label>Ausência</label>
+      <select id="vg-ausencia">
+        <option value="">Selecione...</option>
+        <option>Férias</option>
+        <option>Licença Médica</option>
+        <option>Licença</option>
+      </select>
+    </div>
+
+    <div style="grid-column:1/-1"><label>Observações</label>
+      <input type="text" id="vg-obs" placeholder="Opcional — observações sobre a viagem">
+    </div>
+
+    <div style="display:flex;gap:.5rem;align-items:flex-end;grid-column:1/-1">
+      <button class="btn" onclick="salvarViagem()">✈️ Salvar Viagem</button>
+      <button class="btn btn2" onclick="limparFormViag()">↺ Limpar</button>
+    </div>
+  </div>
+
+  <!-- LISTA DE VIAGENS -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin:1.2rem 0 .6rem">
+    <div class="stit" style="margin:0">Viagens Registradas</div>
+    <span id="vg-count" style="font-size:.72rem;color:var(--mu)"></span>
+  </div>
+  <div class="cc" style="overflow-x:auto;margin-bottom:1.5rem">
+    <table class="dt">
+      <thead><tr>
+        <th>Consultor</th><th>Gerente</th><th>Tipo</th><th>Ausência</th>
+        <th>IDA</th><th>Retorno</th><th>Dias</th><th>UF</th><th>Cidade</th><th>Obs</th><th>Ações</th>
+      </tr></thead>
+      <tbody id="vg-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- BLOCO 2: CALENDÁRIO -->
+  <div class="stit">Calendário de Viagens</div>
+  <div class="cc" style="padding:1rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <button onclick="vgCalNav(-1)" style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:5px;padding:.3rem .8rem;cursor:pointer;font-size:1rem">◀</button>
+        <span id="vg-cal-label" style="font-weight:700;font-size:.95rem;color:var(--wh);min-width:160px;text-align:center"></span>
+        <button onclick="vgCalNav(+1)" style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:5px;padding:.3rem .8rem;cursor:pointer;font-size:1rem">▶</button>
+      </div>
+      <div style="font-size:.68rem;color:var(--mu)">Clique em um dia para ver detalhes</div>
+    </div>
+
+    <!-- Dias da semana header -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px">
+      <div style="text-align:center;font-size:.68rem;font-weight:700;color:var(--mu);padding:.3rem">Dom</div>
+      <div style="text-align:center;font-size:.68rem;font-weight:700;color:var(--mu);padding:.3rem">Seg</div>
+      <div style="text-align:center;font-size:.68rem;font-weight:700;color:var(--mu);padding:.3rem">Ter</div>
+      <div style="text-align:center;font-size:.68rem;font-weight:700;color:var(--mu);padding:.3rem">Qua</div>
+      <div style="text-align:center;font-size:.68rem;font-weight:700;color:var(--mu);padding:.3rem">Qui</div>
+      <div style="text-align:center;font-size:.68rem;font-weight:700;color:var(--mu);padding:.3rem">Sex</div>
+      <div style="text-align:center;font-size:.68rem;font-weight:700;color:var(--mu);padding:.3rem">Sáb</div>
+    </div>
+    <div id="vg-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px"></div>
+  </div>
+
+</div>
+<!-- END AGENDA DE VIAGENS -->
+
+<script>
+// ── DADOS FIXOS (histórico da planilha — não alteram totais financeiros) ──────
+const HIST = [{"ger":"Marlon","cons":"Angélica Silva","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Andrea faro","status":"Pago","mes":"Janeiro","data":"2026-01-30","val":127.94},{"ger":"Marlon","cons":"Angélica Silva","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Rodolfo","status":"Pago","mes":"Fevereiro","data":"2026-02-05","val":173.34},{"ger":"Marlon","cons":"Angélica Silva","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Camila","status":"Pago","mes":"Fevereiro","data":"2026-02-03","val":71.4},{"ger":"Marlon","cons":"Angélica Silva","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Camila","status":"Pago","mes":"Fevereiro","data":"2026-02-10","val":521.73},{"ger":"Marlon","cons":"Angélica Silva","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Francisco","status":"Pago","mes":"Fevereiro","data":"2026-02-10","val":163.35},{"ger":"Marlon","cons":"Angélica Silva","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Felipe Gonzales","status":"Pago","mes":"Fevereiro","data":"2026-02-11","val":477.69},{"ger":"Marlon","cons":"Angélica Silva","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Nadja","status":"Pago","mes":"Março","data":"2026-03-04","val":555.52},{"ger":"Marlon","cons":"Angélica Silva","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Jose Leonardo Sardenberg","status":"Pago","mes":"Março","data":"2026-03-06","val":268.4},{"ger":"Marlon","cons":"Angélica Silva","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Andrea faro","status":"Pago","mes":"Março","data":"2026-03-12","val":146.25},{"ger":"MARLON COSTA","cons":"Elaíne Azevedo","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Sabrina e Lívia","status":"Pago","mes":"Fevereiro","data":"2026-02-03","val":514.8},{"ger":"MARLON COSTA","cons":"Elaíne Azevedo","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Karina e Andréia","status":"Pago","mes":"Fevereiro","data":"2026-02-03","val":602.14},{"ger":"MARLON COSTA","cons":"Elaíne Azevedo","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Juliana Salim","status":"Pago","mes":"Fevereiro","data":"2026-02-05","val":499.48},{"ger":"MARLON COSTA","cons":"Elaíne Azevedo","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Amanda Velten e Jessica","status":"Pago","mes":"Fevereiro","data":"2026-02-05","val":587.0},{"ger":"MARLON COSTA","cons":"Elaíne Azevedo","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Brun Provenzano","status":"Pago","mes":"Fevereiro","data":"2026-02-09","val":60.28},{"ger":"MARLON COSTA","cons":"Elaíne Azevedo","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Thatiana Abelha","status":"Pago","mes":"Fevereiro","data":"2026-02-10","val":412.16},{"ger":"MARLON COSTA","cons":"Elaíne Azevedo","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Thatiana Abelha","status":"Pago","mes":"Março","data":"2026-03-05","val":380.16},{"ger":"MARLON COSTA","cons":"Elaíne Azevedo","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"José Elabras","status":"Pago","mes":"Março","data":"2026-03-06","val":432.1},{"ger":"MARLON COSTA","cons":"Elaíne Azevedo","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Márcia André","status":"Pago","mes":"Março","data":"2026-03-10","val":97.57},{"ger":"MARLON COSTA","cons":"Elaíne Azevedo","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Ivana e M. Eduarda","status":"Pago","mes":"Março","data":"2026-03-11","val":546.57},{"ger":"MARLON COSTA","cons":"Elaíne Azevedo","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"","medico":"Márcia Carreira","status":"Pago","mes":"Março","data":"2026-03-12","val":459.2},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Flávio José","status":"Pago","mes":"Fevereiro","data":"2025-02-02","val":438.56},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Gilmar Zonzin","status":"Pago","mes":"Fevereiro","data":"2025-02-04","val":722.7},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Fabiane Barreto","status":"Pago","mes":"Fevereiro","data":"2026-02-06","val":383.04},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Beatriz chaves","status":"Pago","mes":"Fevereiro","data":"2026-02-13","val":769.22},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Mariana Rust","status":"Pago","mes":"Março","data":"2026-03-02","val":848.96},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Grazzia Venâncio","status":"Pago","mes":"Março","data":"2026-03-04","val":731.36},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Rafael Galvão","status":"Pago","mes":"Março","data":"2026-03-05","val":732.48},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Michele Viegas","status":"Pago","mes":"Março","data":"2026-03-06","val":551.04},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Natália Barboza","status":"Pago","mes":"Março","data":"2026-03-09","val":550.2},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Renato Azambuja","status":"Pago","mes":"Março","data":"2026-03-10","val":744.1},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Fernanda Sholl","status":"Pago","mes":"Março","data":"2026-03-11","val":618.8},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Thamyris","status":"Pago","mes":"Março","data":"2026-03-12","val":665.28},{"ger":"Marlon Costa","cons":"Tassia Novais","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Renato Calil","status":"Pago","mes":"Março","data":"2026-03-16","val":421.12},{"ger":"Marlon Costa","cons":"Silvia Cunha","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Guilherme Spinelli*","status":"Pago","mes":"Janeiro","data":"","val":762.72},{"ger":"Marlon Costa","cons":"Silvia Cunha","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Mariana Farias*","status":"Pago","mes":"Fevereiro","data":"","val":501.76},{"ger":"Marlon Costa","cons":"Silvia Cunha","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Sérgio Dortas*","status":"Pago","mes":"Fevereiro","data":"2026-02-12","val":569.4},{"ger":"Marlon Costa","cons":"Silvia Cunha","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Rita de Cássia","status":"Pago","mes":"Fevereiro","data":"2026-02-10","val":289.3},{"ger":"Marlon Costa","cons":"Silvia Cunha","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Patricia Barreto","status":"Pago","mes":"Fevereiro","data":"2026-03-02","val":293.44},{"ger":"Marlon Costa","cons":"Silvia Cunha","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Fernando Azevedo","status":"Pago","mes":"Março","data":"2026-03-05","val":499.52},{"ger":"Marlon Costa","cons":"Silvia Cunha","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Bruno Messias & Maria Margarida* - Rede Américas","status":"Pago","mes":"Março","data":"2026-03-06","val":1181.6},{"ger":"Marlon Costa","cons":"Silvia Cunha","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Rita de Cássia","status":"Pago","mes":"Março","data":"2026-03-10","val":537.9},{"ger":"Marlon Costa","cons":"Silvia Cunha","ind":"DPOC","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Patricia Meirelles","status":"Pago","mes":"Março","data":"2026-03-11","val":753.5},{"ger":"Marlon Costa","cons":"Silvia Cunha","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Rossy Bastos*","status":"Pago","mes":"Março","data":"2026-03-17","val":512.6},{"ger":"Marlon Costa","cons":"Silvia Cunha","ind":"Asma","fra":"Resp","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Alessandra Nunes","status":"Pago","mes":"Março","data":"2026-03-18","val":297.76},{"ger":"Marlon Costa","cons":"Greice Morais","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Gabriela Gomes","status":"Pago","mes":"Fevereiro","data":"2026-02-04","val":451.0},{"ger":"Marlon Costa","cons":"Greice Morais","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Paulo Oldani","status":"Pago","mes":"Fevereiro","data":"2026-02-05","val":440.04},{"ger":"Marlon Costa","cons":"Greice Morais","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Violeta Tortely","status":"Pago","mes":"Fevereiro","data":"","val":377.96},{"ger":"Marlon Costa","cons":"Greice Morais","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Luiz Bandoli","status":"Pago","mes":"Março","data":"2026-03-09","val":302.5},{"ger":"Marlon Costa","cons":"Greice Morais","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Gustavo Amoy / Maria Fernanda","status":"Pago","mes":"Março","data":"2026-03-09","val":641.3},{"ger":"Marlon Costa","cons":"Greice Morais","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Rita de Cássia","status":"Pago","mes":"Março","data":"2026-03-10","val":50.0},{"ger":"Marlon Costa","cons":"Greice Morais","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Bárbara Hildebrant","status":"Pago","mes":"Março","data":"2026-03-10","val":233.2},{"ger":"Marlon Costa","cons":"Greice Morais","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Tatiana Reis","status":"Pago","mes":"Março","data":"2026-03-11","val":432.09},{"ger":"Marlon Costa","cons":"Greice Morais","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Camila Ventura","status":"Pago","mes":"Março","data":"2026-03-12","val":407.68},{"ger":"Marlon Costa","cons":"Greice Morais","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Camila Penedo / Carolina Crespo","status":"Pago","mes":"Março","data":"2026-03-17","val":525.8},{"ger":"Marlon Costa","cons":"Greice Morais","ind":"DA","fra":"Derma","tipo":"Speaker Meetings","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Veronica Bogado e outros","status":"Pago","mes":"Março","data":"2026-03-18","val":2630.28},{"ger":"Marlon Costa","cons":"Greice Morais","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Andresa Cabral","status":"Pago","mes":"Março","data":"2026-03-19","val":287.1},{"ger":"Marlon Costa","cons":"Caroline Pereira","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Monique Fontes","status":"Pago","mes":"Fevereiro","data":"2026-02-02","val":244.16},{"ger":"Marlon Costa","cons":"Caroline Pereira","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Maria Claudia Camargo","status":"Pago","mes":"Fevereiro","data":"2026-02-03","val":385.01},{"ger":"Marlon Costa","cons":"Caroline Pereira","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dr Bruno Porto","status":"Pago","mes":"Fevereiro","data":"2026-02-04","val":110.88},{"ger":"Marlon Costa","cons":"Caroline Pereira","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Camila Alves","status":"Pago","mes":"Fevereiro","data":"2026-02-05","val":490.0},{"ger":"Marlon Costa","cons":"Caroline Pereira","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Juliany Stefan","status":"Pago","mes":"Fevereiro","data":"2026-02-08","val":179.2},{"ger":"Marlon Costa","cons":"Caroline Pereira","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dr Cristiane Vigne","status":"Pago","mes":"Fevereiro","data":"2026-02-11","val":561.12},{"ger":"Marlon Costa","cons":"Caroline Pereira","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Haizza Monteiro","status":"Pago","mes":"Fevereiro","data":"2026-02-12","val":715.6},{"ger":"Marlon Costa","cons":"Vagner Elias","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Cynthia Meyrelles","status":"Pago","mes":"Janeiro","data":"2026-01-22","val":244.97},{"ger":"Marlon Costa","cons":"Vagner Elias","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Fabricio Prado","status":"Pago","mes":"Fevereiro","data":"2026-02-11","val":52.0},{"ger":"Marlon Costa","cons":"Vagner Elias","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Cristiane Bahos","status":"Pago","mes":"Fevereiro","data":"2026-02-11","val":73.29},{"ger":"Marlon Costa","cons":"Vagner Elias","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Paula Perim / Aline Camporez","status":"Pago","mes":"Fevereiro","data":"2026-02-10","val":1160.06},{"ger":"Marlon Costa","cons":"Vagner Elias","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Karla Delevedove","status":"Pago","mes":"Fevereiro","data":"2026-02-10","val":501.0},{"ger":"Marlon Costa","cons":"Vagner Elias","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Claudia Camargo","status":"Pago","mes":"Março","data":"2026-03-04","val":439.56},{"ger":"Marlon Costa","cons":"Vagner Elias","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"João Victor","status":"Pago","mes":"Março","data":"2026-03-10","val":267.41},{"ger":"MARLON COSTA","cons":"Eduardo Reis","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"BRUNO EDUARDO","status":"Pago","mes":"Março","data":"2026-03-03","val":334.88},{"ger":"MARLON COSTA","cons":"Eduardo Reis","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"ALINE BRESSAN","status":"Pago","mes":"Março","data":"2026-03-04","val":324.32},{"ger":"MARLON COSTA","cons":"Eduardo Reis","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"CAROLINA GHIRLINZONI","status":"Pago","mes":"Março","data":"2026-03-10","val":526.9},{"ger":"MARLON COSTA","cons":"Eduardo Reis","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"FÁBIO KUSCHNIR","status":"Pago","mes":"Março","data":"2026-03-16","val":374.08},{"ger":"MARLON COSTA","cons":"Eduardo Reis","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"PEDRO ANDRADE","status":"Pago","mes":"Março","data":"2026-03-16","val":151.87},{"ger":"MARLON COSTA","cons":"Eduardo Reis","ind":"DA","fra":"Derma","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"CLÁUDIO JACQUES","status":"Pago","mes":"Março","data":"2026-03-18","val":850.64},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dr Raniery","status":"Pago","mes":"Fevereiro","data":"2026-02-02","val":101.52},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Nathália","status":"Pago","mes":"Fevereiro","data":"2026-02-04","val":187.04},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dr Junqueira","status":"Pago","mes":"Fevereiro","data":"2026-02-05","val":315.84},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Flávia Loyola","status":"Pago","mes":"Fevereiro","data":"2026-02-06","val":273.28},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Roberta Roldi","status":"Pago","mes":"Fevereiro","data":"2026-02-09","val":234.3},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Fernanda Machado","status":"Pago","mes":"Fevereiro","data":"2026-02-09","val":606.1},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Roberta Fragoso","status":"Pago","mes":"Fevereiro","data":"2026-02-10","val":45.1},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Silvana","status":"Pago","mes":"Fevereiro","data":"2026-02-11","val":205.7},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dr Leonardo Tinoco","status":"Pago","mes":"Março","data":"2026-03-03","val":309.12},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Flávia Loyola","status":"Pago","mes":"Março","data":"2026-03-06","val":264.78},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dr Raniery","status":"Pago","mes":"Março","data":"2026-03-09","val":154.83},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Marina Rigoni","status":"Pago","mes":"Março","data":"2026-03-11","val":214.7},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Paula Perim","status":"Pago","mes":"Março","data":"2026-03-17","val":552.2},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Fernanda Machado","status":"Pago","mes":"Março","data":"2026-03-17","val":650.0},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Silvana","status":"Pago","mes":"Março","data":"2026-03-18","val":344.3},{"ger":"Marlon Costa","cons":"Eduardo de Deus","ind":"EoE","fra":"Gastro","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Dra Roberta Fragoso","status":"Pago","mes":"Março","data":"2026-03-18","val":58.3},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Danielle Hosken","status":"Pago","mes":"Janeiro","data":"2026-01-26","val":920.95},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Tiago Binoti","status":"Pago","mes":"Fevereiro","data":"2026-02-02","val":677.1},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Flávia Freitas, Raphaella Loureiro","status":"Pago","mes":"Fevereiro","data":"2026-02-03","val":450.47},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Fabrício Prado","status":"Pago","mes":"Fevereiro","data":"2026-02-03","val":276.1},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Albert Bitran","status":"Pago","mes":"Fevereiro","data":"2026-02-04","val":557.65},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Vivian, Susan Tabasnik, Priscila Campos","status":"Pago","mes":"Fevereiro","data":"2026-02-09","val":1287.64},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Priscila Geller","status":"Pago","mes":"Fevereiro","data":"2026-02-13","val":1404.59},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Danielle Hosken","status":"Pago","mes":"Março","data":"2026-03-03","val":126.34},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Cecília Pache","status":"Pago","mes":"Março","data":"2026-03-04","val":650.72},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Janaína Kopp","status":"Pago","mes":"Março","data":"2026-03-05","val":610.2},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Anna Carolina Arraes","status":"Pago","mes":"Março","data":"2026-03-06","val":480.19},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Camila Ventura","status":"Pago","mes":"Março","data":"2026-03-10","val":385.0},{"ger":"Marlon Costa","cons":"Rafaela Correa","ind":"NP","fra":"Rhyno","tipo":"Refeição de Negócios (RN)","tipoAp":"","soc":"","verba":"Verba Regional","medico":"Vivian tabasnik, Elio Castro","status":"Pago","mes":"Março","data":"2026-03-12","val":698.99}];
+
+// ── ESTADO FINANCEIRO (totais reais da planilha) ──────────────────────────────
+const D = {
+  orc: {Resp:180000,Derma:360000,Rhyno:120000,Gastro:60000},
+  pago:{Resp:21473, Derma:14766, Rhyno:8526,  Gastro:4517},
+  plan:{Resp:50000, Derma:90000, Rhyno:45000, Gastro:15000},
+  comp:{Resp:71473, Derma:104766,Rhyno:53526, Gastro:19517},
+  saldo:{Resp:108527,Derma:255234,Rhyno:66474,Gastro:40483},
+  pct: {Resp:0.397, Derma:0.291, Rhyno:0.446, Gastro:0.325},
+  monthly:{Resp:[891,8051,12532,0,0,0,0,0,0,0,0,0],Derma:[245,5741,8780,0,0,0,0,0,0,0,0,0],Rhyno:[921,3605,4001,0,0,0,0,0,0,0,0,0],Gastro:[0,1909,2608,0,0,0,0,0,0,0,0,0]},
+  qtr:{pago:{Resp:[21473,0,0,0],Derma:[14766,0,0,0],Rhyno:[8526,0,0,0],Gastro:[4517,0,0,0]},plan:{Resp:[0,75000,0,0],Derma:[0,140000,0,0],Rhyno:[0,20000,25000,0],Gastro:[0,0,15000,0]}},
+  cons:{"Angélica Silva":{pago:2506,comp:2506},"Elaíne Azevedo":{pago:4591,comp:4591},"Tassia Novais":{pago:8177,comp:8177},"Silvia Cunha":{pago:6200,comp:6200},"Greice Morais":{pago:6779,comp:6779},"Caroline Pereira":{pago:2686,comp:2686},"Vagner Elias":{pago:2738,comp:2738},"Eduardo Reis":{pago:2563,comp:2563},"Eduardo de Deus":{pago:4517,comp:4517},"Rafaela Correa":{pago:8526,comp:28526},"Dayane Olivieri":{pago:0,comp:0}},
+  // novos lançamentos desta sessão (persistidos no localStorage)
+  sess: []
+};
+
+const FR = ['Resp','Derma','Rhyno','Gastro'];
+const MN = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MF = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const TPS = ['Refeição de Negócios (RN)','Speaker Meetings','Coffee Break','Apoio Sociedade','Apoio Prestador'];
+const TPS_S = ['RN','Speaker','Coffee','Ap.Soc','Ap.Pre'];
+const STS = ['Planejado','Pago','Adiado','Cancelado'];
+const QQ = ['Q1 Jan-Mar','Q2 Abr-Jun','Q3 Jul-Set','Q4 Out-Dez'];
+const FC = {Resp:'#1e40af',Derma:'#065f46',Rhyno:'#5b21b6',Gastro:'#92400e'};
+const FL = {Resp:'#60a5fa',Derma:'#34d399',Rhyno:'#a78bfa',Gastro:'#fbbf24'};
+const TC = ['#1d9e75','#185fa5','#ba7517','#5b21b6','#993c1d'];
+const SC = {Planejado:'#185fa5',Pago:'#1d9e75',Adiado:'#ba7517',Cancelado:'#c62828'};
+
+const f0 = v => { const n=parseFloat(v)||0; return 'R$ '+(n>=1000?(n/1000).toFixed(1)+'k':n.toFixed(0)); };
+const f2 = v => 'R$ '+(parseFloat(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fp = v => (v*100).toFixed(1)+'%';
+const mesToQ = m => { const i=MF.indexOf(m); return i<=2?0:i<=5?1:i<=8?2:3; };
+// IDs excluídos nesta sessão - evita recarregar do Sheets após exclusão
+const _deletedIds = new Set();
+
+const allLancs = () => [...HIST, ...D.sess];
+
+const CHS = {};
+// Global Chart.js defaults — ensures ALL text is #8890b0
+if(typeof Chart!=='undefined'){
+  Chart.defaults.color='#8890b0';
+  Chart.defaults.font.family='Arial';
+  Chart.defaults.font.size=9;
+}
+const CD = {responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8890b0',font:{size:9,family:'Arial'},boxWidth:9}}},color:'#8890b0'};
+const AX = {x:{ticks:{color:'#8890b0',font:{size:9}},grid:{color:'#2d3154'}},y:{ticks:{color:'#8890b0',callback:v=>f0(v),font:{size:9}},grid:{color:'#2d3154'}}};
+function mk(id,type,data,opt){
+  if(CHS[id]) CHS[id].destroy();
+  const c=document.getElementById(id); if(!c)return;
+  CHS[id]=new Chart(c,{type,data,options:{...CD,...opt,plugins:{...CD.plugins,...((opt||{}).plugins||{})}}});
+}
+
+// ── SENHA GLOBAL DO APP ───────────────────────────────────────────────────────
+const APP_PW  = 'sanofi@2026';
+const APP_KEY = 'dupihub_app_auth';
+
+function isAppUnlocked(){
+  return localStorage.getItem(APP_KEY) === '1';
+}
+
+function showGlobalPwModal(){
+  if(isAppUnlocked()) return;
+  const m = document.getElementById('globalPwModal');
+  m.style.display = 'flex';
+  setTimeout(()=>{ const i=document.getElementById('globalPwInput'); if(i) i.focus(); }, 120);
+}
+
+function checkGlobalPassword(){
+  const pw  = document.getElementById('globalPwInput').value;
+  const err = document.getElementById('globalPwError');
+  if(pw === APP_PW){
+    localStorage.setItem(APP_KEY, '1');
+    document.getElementById('globalPwModal').style.display = 'none';
+    document.getElementById('globalPwInput').value = '';
+    unlockApp();
+  } else {
+    err.style.display = 'block';
+    document.getElementById('globalPwInput').value = '';
+    document.getElementById('globalPwInput').focus();
+    setTimeout(()=>{ err.style.display='none'; }, 3000);
+  }
+}
+
+function unlockApp(){
+  // Update header badge to green
+  const badge = document.getElementById('globalBadge');
+  const lbl   = document.getElementById('globalLockLabel');
+  const icon  = document.getElementById('globalLockIcon');
+  if(badge){ badge.style.background='#1d9e7515'; badge.style.borderColor='#1d9e7544'; badge.style.cursor='default'; badge.onclick=null; }
+  if(lbl){ lbl.textContent='Desbloqueado'; lbl.style.color='var(--ac)'; }
+  if(icon) icon.textContent='🔓';
+  // Reveal blurred content in all pages
+  document.querySelectorAll('.app-blur').forEach(el=>{
+    el.style.filter='';
+    el.style.pointerEvents='';
+    el.style.userSelect='';
+  });
+  // Enable lancForm inputs
+  document.querySelectorAll('#lancForm input, #lancForm select, #lancForm button').forEach(el=>{
+    el.disabled=false; el.style.opacity=''; el.style.cursor='';
+  });
+  // Enable lançar button
+  document.querySelectorAll('.btn-lancar').forEach(el=>{
+    el.disabled=false; el.style.opacity=''; el.style.cursor='';
+  });
+}
+
+function lockApp(){
+  // Blur content in all pages
+  document.querySelectorAll('.app-blur').forEach(el=>{
+    el.style.filter='blur(6px)';
+    el.style.pointerEvents='none';
+    el.style.userSelect='none';
+  });
+  // Disable lancForm inputs
+  document.querySelectorAll('#lancForm input, #lancForm select, #lancForm button').forEach(el=>{
+    el.disabled=true; el.style.opacity='0.4'; el.style.cursor='not-allowed';
+  });
+}
+
+function initAppLock(){
+  if(isAppUnlocked()){
+    unlockApp();
+  } else {
+    lockApp();
+    // Show modal automatically on first visit
+    setTimeout(showGlobalPwModal, 400);
+  }
+}
+
+// Keep backward compat
+function initLancLock(){ initAppLock(); }
+function showPwModal(){ showGlobalPwModal(); }
+
+// ── CALENDÁRIO DE EVENTOS ─────────────────────────────────────────────────────
+let _calMes = new Date().getMonth();
+let _calAno = new Date().getFullYear();
+
+const MESES_NOME = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+const CAL_CORES = {
+  'Speaker Meetings': '#185fa5',
+  'Coffee Break':     '#c62828',
+  'Apoio Sociedade':  '#ba7517',
+  'Apoio Prestador':  '#ba7517',
+};
+
+function calMes(d){
+  _calMes += d;
+  if(_calMes > 11){ _calMes=0; _calAno++; }
+  if(_calMes < 0) { _calMes=11; _calAno--; }
+  buildCalendar();
+}
+
+function buildCalendar(){
+  const lbl = document.getElementById('calMesLabel');
+  if(!lbl) return;
+  lbl.textContent = MESES_NOME[_calMes] + ' / ' + _calAno;
+
+  const cal   = document.getElementById('calGrid');
+  const list  = document.getElementById('calEventList');
+  if(!cal) return;
+
+  // Get events (Eventos e Apoios with dates) for this month
+  const mesNome = MESES_NOME[_calMes];
+  const evts = allLancs().filter(l=>{
+    const isEvt = ['Speaker Meetings','Coffee Break','Apoio Sociedade','Apoio Prestador'].includes(l.tipo);
+    return isEvt && (l.mes === mesNome || (l.data && l.data.startsWith(_calAno+'-'+String(_calMes+1).padStart(2,'0'))));
+  });
+
+  // Also get RN for this month (optional - show as dots)
+  const rns = allLancs().filter(l=>{
+    const isRN = ['Almoço','Jantar','Café','Refeição de Negócios (RN)'].includes(l.tipo);
+    return isRN && l.mes === mesNome;
+  });
+
+  const dias  = new Date(_calAno, _calMes+1, 0).getDate();
+  const start = new Date(_calAno, _calMes, 1).getDay();
+  const DIAS_HDR = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  // Build day → events map
+  const dayEvts = {};
+  evts.forEach(e=>{
+    if(e.data){
+      const day = parseInt(e.data.split('-')[2]);
+      if(!dayEvts[day]) dayEvts[day]=[];
+      dayEvts[day].push(e);
+    }
+  });
+
+  let out = DIAS_HDR.map(d=>
+    `<div style="text-align:center;font-weight:700;color:var(--mu);font-size:.66rem;padding:.3rem;border-bottom:1px solid var(--bd)">${d}</div>`
+  ).join('');
+
+  for(let i=0;i<start;i++) out += '<div></div>';
+
+  for(let d=1;d<=dias;d++){
+    const fds    = [0,6].includes(new Date(_calAno,_calMes,d).getDay());
+    const dayEvs = dayEvts[d] || [];
+    const hasRN  = rns.some(r=>{
+      if(r.data){ return parseInt(r.data.split('-')[2])===d; }
+      return false;
+    });
+    const bg = dayEvs.length ? 'var(--sf)' : fds ? 'var(--sf2)' : 'var(--sf2)';
+    const bc = dayEvs.length ? '#185fa5' : 'var(--bd)';
+
+    const dots = dayEvs.slice(0,3).map(e=>{
+      const c = CAL_CORES[e.tipo] || '#8890b0';
+      return `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c};margin:.5px" title="${e.cons} — ${e.tipo}"></span>`;
+    }).join('');
+
+    const rnDot = hasRN ? `<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#1d9e7566;margin:.5px"></span>` : '';
+
+    out += `<div onclick="calDayClick(${d})" style="background:${bg};border:1px solid ${bc};border-radius:5px;padding:.3rem .25rem;min-height:50px;cursor:${dayEvs.length?'pointer':'default'};transition:border-color .15s"
+      title="${dayEvs.map(e=>e.cons+' — '+e.tipo+(e.val?' R$'+e.val:'')).join('\n')}">
+      <div style="font-weight:700;color:${fds?'var(--mu)':'var(--wh)'};font-size:.7rem">${d}</div>
+      <div style="margin-top:.2rem">${dots}${rnDot}</div>
+      ${dayEvs.length > 3 ? `<div style="font-size:.55rem;color:var(--mu)">+${dayEvs.length-3}</div>` : ''}
+    </div>`;
+  }
+  cal.innerHTML = out;
+
+  // Event list for the month
+  if(evts.length){
+    const sorted = [...evts].sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+    list.innerHTML = `<div style="font-size:.72rem;font-weight:700;color:var(--mu);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em">
+      Eventos do mês (${evts.length})</div>` +
+      sorted.map(e=>{
+        const c   = CAL_CORES[e.tipo] || '#8890b0';
+        const dia = e.data ? parseInt(e.data.split('-')[2])+'/' + String(_calMes+1).padStart(2,'0') : 'sem data';
+        return `<div style="display:flex;align-items:center;gap:.6rem;padding:.4rem .6rem;background:var(--sf2);border-left:3px solid ${c};border-radius:0 5px 5px 0;margin-bottom:.3rem">
+          <span style="font-size:.7rem;color:var(--mu);min-width:35px">${dia}</span>
+          <span style="flex:1;font-size:.78rem;color:var(--wh);font-weight:600">${e.cons}</span>
+          <span style="font-size:.7rem;padding:.1rem .4rem;background:${c}22;color:${c};border:1px solid ${c}44;border-radius:10px">${e.tipo}</span>
+          <span style="font-size:.72rem;color:var(--ac);font-weight:600">${fmtF(e.val)}</span>
+        </div>`;
+      }).join('');
+  } else {
+    list.innerHTML = `<div style="text-align:center;color:var(--mu);font-size:.78rem;padding:1rem">
+      Nenhum evento planejado para ${MESES_NOME[_calMes]}.<br>
+      <span style="font-size:.68rem">Lançamentos de Eventos e Apoios com data aparecem aqui.</span>
+    </div>`;
+  }
+}
+
+function calDayClick(d){
+  const mesNome = MESES_NOME[_calMes];
+  const evts = allLancs().filter(l=>{
+    const isEvt = ['Speaker Meetings','Coffee Break','Apoio Sociedade','Apoio Prestador'].includes(l.tipo);
+    return isEvt && l.data && parseInt(l.data.split('-')[2])===d &&
+      l.data.startsWith(_calAno+'-'+String(_calMes+1).padStart(2,'0'));
+  });
+  if(!evts.length) return;
+  const info = evts.map(e=>
+    `• ${e.cons} — ${e.tipo}\n  Franquia: ${e.fra} | Status: ${e.status} | Valor: ${fmtF(e.val)}${e.medico?' | Médico: '+e.medico:''}`
+  ).join('\n\n');
+  alert(`Eventos em ${d}/${String(_calMes+1).padStart(2,'0')}/${_calAno}:\n\n${info}`);
+}
+
+function buildAll(){
+  try{ kpis(); }catch(e){}
+  try{ gauges(); }catch(e){}
+  try{ buildCalendar(); }catch(e){}
+  try{ waterfall(); }catch(e){}
+  try{ quarters(); }catch(e){}
+  try{ pie1(); }catch(e){}
+  try{ barH(); }catch(e){}
+  try{ donut(); }catch(e){}
+  try{ line(); }catch(e){}
+  try{ thermo(); }catch(e){}
+  try{ consChart(); }catch(e){}
+  try{ consBubble(); }catch(e){}
+  try{ burnRate(); }catch(e){}
+  try{ consTable(); }catch(e){}
+  try{ orcForm(); }catch(e){}
+  try{ tipoCharts(); }catch(e){}
+  try{ statusCharts(); }catch(e){}
+}
+
+function kpis(){
+  const tO=FR.reduce((s,f)=>s+D.orc[f],0);
+  const tP=FR.reduce((s,f)=>s+D.pago[f],0);
+  const tPl=FR.reduce((s,f)=>s+D.plan[f],0);
+  const tC=FR.reduce((s,f)=>s+D.comp[f],0);
+  const tS=FR.reduce((s,f)=>s+D.saldo[f],0);
+  document.getElementById('k-orc').textContent=f0(tO);
+  document.getElementById('k-pago').textContent=f0(tP);
+  document.getElementById('k-plan').textContent=f0(tPl);
+  document.getElementById('k-comp').textContent=f0(tC);
+  document.getElementById('k-saldo').textContent=f0(tS);
+  document.getElementById('k-pago-p').textContent=fp(tP/tO)+' do orçamento';
+  document.getElementById('k-plan-p').textContent=fp(tPl/tO)+' do orçamento';
+  document.getElementById('k-comp-p').textContent=fp(tC/tO)+' do orçamento';
+  document.getElementById('k-saldo-p').textContent=fp(tS/tO)+' livre';
+  document.getElementById('k-nlanc').textContent=allLancs().length;
+}
+
+function gauges(){
+  const c=document.getElementById('gauges'); if(!c)return; c.innerHTML='';
+  FR.forEach(f=>{
+    const p=D.pct[f],z=p<.6?'#1d9e75':p<.8?'#ba7517':'#c62828';
+    const a=(180-p*180)*Math.PI/180,nx=70+52*Math.cos(a),ny=68-52*Math.sin(a);
+    c.innerHTML+=`<div class="gc"><div class="gt" style="color:${FL[f]}">${f}</div>
+    <div style="width:120px;height:75px;margin:0 auto .4rem"><svg viewBox="0 0 140 80" style="width:100%;height:100%">
+      <path d="M10 70 A60 60 0 0 1 70 10" fill="none" stroke="#1e3a8a" stroke-width="12" stroke-linecap="round"/>
+      <path d="M70 10 A60 60 0 0 1 105 20" fill="none" stroke="#92400e" stroke-width="12" stroke-linecap="round"/>
+      <path d="M105 20 A60 60 0 0 1 130 70" fill="none" stroke="#c62828" stroke-width="12" stroke-linecap="round"/>
+      <path d="M10 70 A60 60 0 0 1 70 10" fill="none" stroke="#1d9e75" stroke-width="10" stroke-linecap="round" stroke-dasharray="${p*.6*188} 188"/>
+      <line x1="70" y1="68" x2="${nx}" y2="${ny}" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="70" cy="68" r="5" fill="${FC[f]}"/><circle cx="70" cy="68" r="3" fill="white"/>
+      <text x="70" y="62" text-anchor="middle" font-size="10" fill="white" font-weight="bold">${fp(p)}</text>
+      <text x="10" y="80" font-size="8" fill="#8890b0">0%</text><text x="130" y="80" text-anchor="end" font-size="8" fill="#8890b0">100%</text>
+    </svg></div>
+    <div class="gp" style="color:${z}">${fp(p)}</div>
+    <div class="gd">Comprometido: ${f0(D.comp[f])}<br>Orçamento: ${f0(D.orc[f])}</div></div>`;
+  });
+}
+
+function waterfall(){mk('cWater','bar',{labels:FR,datasets:[{label:'Pago',data:FR.map(f=>D.pago[f]),backgroundColor:'#1d9e75',stack:'s'},{label:'Planejado s/ pagar',data:FR.map(f=>Math.max(D.plan[f]-D.pago[f],0)),backgroundColor:'#ba7517',stack:'s'},{label:'Saldo',data:FR.map(f=>Math.max(D.saldo[f],0)),backgroundColor:'#185fa5',stack:'s'}]},{scales:AX,plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${f0(c.raw)}`}}}})}
+
+function quarters(){const ds=[];FR.forEach(f=>{ds.push({label:f+' Pago',data:D.qtr.pago[f],backgroundColor:FC[f],stack:f});ds.push({label:f+' Plan',data:D.qtr.plan[f],backgroundColor:FL[f],stack:f,borderWidth:1,borderColor:FC[f]})});mk('cQtr','bar',{labels:QQ,datasets:ds},{scales:AX})}
+
+function pie1(){mk('cPie1','pie',{labels:FR,datasets:[{data:FR.map(f=>D.comp[f]),backgroundColor:FR.map(f=>FL[f]),borderColor:'#1a1d27',borderWidth:2}]},{plugins:{legend:{position:'right',labels:{color:'#8890b0',font:{size:9},boxWidth:9}},tooltip:{callbacks:{label:c=>`${c.label}: ${f0(c.raw)}`}}}})}
+
+function barH(){
+  mk('cBarH','bar',{
+    labels: FR,
+    datasets:[
+      {
+        label: 'Orçamento',
+        data:  FR.map(f=>D.orc[f]),
+        backgroundColor: FR.map(f=>FL[f]+'22'),
+        borderColor:     FR.map(f=>FL[f]),
+        borderWidth: 2
+      },
+      {
+        label: 'Pago',
+        data:  FR.map(f=>D.pago[f]),
+        backgroundColor: FR.map(f=>FL[f]+'cc'),
+        borderColor:     FR.map(f=>FL[f]),
+        borderWidth: 1
+      },
+      {
+        label: 'Planejado',
+        data:  FR.map(f=>Math.max(D.plan[f]-D.pago[f],0)),
+        backgroundColor: FR.map(f=>FC[f]+'bb'),
+        borderColor:     FR.map(f=>FC[f]),
+        borderWidth: 1
+      }
+    ]
+  },{
+    indexAxis: 'y',
+    scales: {
+      x: {ticks:{color:'#8890b0',font:{size:9},callback:v=>f0(v)}, grid:{color:'#2d3154'}},
+      y: {ticks:{color:'#8890b0',font:{size:10},font:{weight:'bold'}}, grid:{color:'#2d3154'}}
+    },
+    plugins:{
+      legend:{
+        labels:{
+          color:'#8890b0', font:{size:9}, boxWidth:12, useBorderRadius:true, borderRadius:2,
+          generateLabels: ()=>[
+            {text:'Orçamento',           fillStyle:'transparent', strokeStyle:'#8890b0', lineWidth:2, fontColor:'#8890b0', textColor:'#8890b0', color:'#8890b0'},
+            {text:'Resp — Pago/Plan',    fillStyle:FL['Resp'],   strokeStyle:FL['Resp'],   fontColor:'#8890b0', textColor:'#8890b0', color:'#8890b0'},
+            {text:'Derma — Pago/Plan',   fillStyle:FL['Derma'],  strokeStyle:FL['Derma'],  fontColor:'#8890b0', textColor:'#8890b0', color:'#8890b0'},
+            {text:'Rhyno — Pago/Plan',   fillStyle:FL['Rhyno'],  strokeStyle:FL['Rhyno'],  fontColor:'#8890b0', textColor:'#8890b0', color:'#8890b0'},
+            {text:'Gastro — Pago/Plan',  fillStyle:FL['Gastro'], strokeStyle:FL['Gastro'], fontColor:'#8890b0', textColor:'#8890b0', color:'#8890b0'},
+          ]
+        }
+      },
+      tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${f0(c.raw)}`}}
+    }
+  });
+}
+
+function donut(){mk('cDonut','doughnut',{labels:FR,datasets:[{data:FR.map(f=>D.comp[f]),backgroundColor:FR.map(f=>FL[f]),borderColor:'#1a1d27',borderWidth:3,hoverOffset:8}]},{plugins:{legend:{position:'right',labels:{color:'#8890b0',font:{size:9},boxWidth:9}}},cutout:'58%'})}
+
+function line(){mk('cLine','line',{labels:MN,datasets:FR.map(f=>({label:f,data:D.monthly[f],borderColor:FC[f],backgroundColor:FC[f]+'33',pointBackgroundColor:FC[f],tension:.35,fill:false,pointRadius:3}))},{scales:AX})}
+
+function thermo(){
+  const c=document.getElementById('thermo'); if(!c)return; c.innerHTML='';
+  FR.forEach(f=>{
+    const total = D.pago[f] + Math.max(D.plan[f]-D.pago[f],0);
+    const p = D.orc[f] ? total/D.orc[f] : 0;
+    const pPago = D.orc[f] ? D.pago[f]/D.orc[f] : 0;
+    const z = p<.6?'#1d9e75':p<.8?'#ba7517':'#c62828';
+    c.innerHTML+=`<div style="margin-bottom:.9rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem">
+        <span style="font-size:.82rem;font-weight:700;color:${FL[f]}">${f}</span>
+        <span style="font-size:.72rem;color:var(--mu)">${f0(total)} de ${f0(D.orc[f])}</span>
+        <span style="font-size:.82rem;font-weight:700;color:${z}">${fp(p)}</span>
+      </div>
+      <div class="pb" style="position:relative">
+        <div class="pf" style="width:${Math.min(pPago*100,100)}%;background:#1d9e75;position:absolute;top:0;left:0;height:100%"></div>
+        <div style="width:${Math.min(p*100,100)}%;background:${z}33;border:1px solid ${z};border-radius:4px;height:100%;position:absolute;top:0;left:0"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.63rem;color:var(--mu);margin-top:.2rem">
+        <span>🟢 Pago: ${f0(D.pago[f])}</span>
+        <span>🟡 Planejado: ${f0(D.plan[f])}</span>
+        <span>💰 Saldo: ${f0(D.saldo[f])}</span>
+      </div>
+    </div>`;
+  });
+}
+
+function consChart(){
+  const ks  = Object.keys(D.cons);
+  const tO  = FR.reduce((s,f)=>s+D.orc[f],0);
+  const pcts= ks.map(c=>tO ? Math.round((D.cons[c].pago+Math.max(D.cons[c].comp-D.cons[c].pago,0))/tO*100) : 0);
+  const CONS_C = {
+    'Angélica Silva':'#1d9e75','Elaíne Azevedo':'#185fa5','Tassia Novais':'#f59e0b',
+    'Silvia Cunha':'#ef4444','Greice Morais':'#a855f7','Caroline Pereira':'#ec4899',
+    'Vagner Elias':'#0891b2','Eduardo Reis':'#f97316','Eduardo de Deus':'#84cc16',
+    'Rafaela Correa':'#6366f1','Dayane Olivieri':'#14b8a6','Regional':'#e2e8f0'
+  };
+  const shortName = c => c==='Eduardo Reis'?'Edu Reis':c==='Eduardo de Deus'?'Edu Deus':c.split(' ')[0];
+  mk('cCons','bar',{
+    labels: ks.map(c=>shortName(c)),
+    datasets:[
+      {label:'Pago',     data:ks.map(c=>D.cons[c].pago), backgroundColor:ks.map(c=>CONS_C[c]||'#1d9e75'), yAxisID:'y'},
+      {label:'Planejado',data:ks.map(c=>Math.max(D.cons[c].comp-D.cons[c].pago,0)), backgroundColor:ks.map(c=>(CONS_C[c]||'#ba7517')+'66'), borderColor:ks.map(c=>CONS_C[c]||'#ba7517'), borderWidth:1, yAxisID:'y'},
+      {label:'% Verba Total',data:pcts, type:'line', borderColor:'#185fa5', backgroundColor:'#185fa522',
+       pointBackgroundColor:'#185fa5', tension:.3, yAxisID:'y1', pointRadius:4}
+    ]
+  },{
+    scales:{
+      x:  {ticks:{color:'#8890b0',font:{size:8}}, grid:{color:'#2d3154'}},
+      y:  {ticks:{color:'#8890b0',font:{size:9},callback:v=>f0(v)}, grid:{color:'#2d3154'}},
+      y1: {position:'right', grid:{drawOnChartArea:false},
+           ticks:{color:'#185fa5',font:{size:9},callback:v=>v+'%'},
+           min:0, max:Math.max(...pcts,10)+5}
+    },
+    plugins:{
+      legend:{labels:{color:'#8890b0',font:{size:9},boxWidth:10}},
+      tooltip:{callbacks:{label:c=>c.dataset.label===('% Verba Total')?c.raw+'% da verba total':`${c.dataset.label}: ${f0(c.raw)}`}}
+    }
+  });
+}
+
+function consTable(){
+  const tb=document.getElementById('tCons'); if(!tb)return;
+  const tO=FR.reduce((s,f)=>s+D.orc[f],0);
+  let h='<colgroup><col style="width:auto"><col style="width:110px"><col style="width:110px"><col style="width:110px"><col style="width:100px"></colgroup>';
+  h+='<thead><tr><th>Consultor</th><th class="nr">Pago (R$)</th><th class="nr">Planejado (R$)</th><th class="nr">Total</th><th class="nr">% Verba Total</th></tr></thead><tbody>';
+  Object.entries(D.cons).forEach(([c,d])=>{
+    const plan=Math.max(d.comp-d.pago,0);
+    const tot=d.pago+plan;
+    h+=`<tr><td>${c}</td><td class="nr" style="color:#1d9e75">${f2(d.pago)}</td><td class="nr" style="color:#ba7517">${f2(plan)}</td><td class="nr">${f2(tot)}</td><td class="nr">${fp(tO?tot/tO:0)}</td></tr>`;
+  });
+  const tP=Object.values(D.cons).reduce((s,d)=>s+d.pago,0);
+  const tPl=Object.values(D.cons).reduce((s,d)=>s+Math.max(d.comp-d.pago,0),0);
+  h+=`<tr style="font-weight:700;border-top:2px solid var(--bd)"><td>Total</td><td class="nr" style="color:#1d9e75">${f2(tP)}</td><td class="nr" style="color:#ba7517">${f2(tPl)}</td><td class="nr">${f2(tP+tPl)}</td><td class="nr">${fp(tO?(tP+tPl)/tO:0)}</td></tr></tbody>`;
+  tb.innerHTML=h;
+}
+
+// ── BUDGET LOCK ───────────────────────────────────────────────────────────────
+let _budgetUnlocked = false;
+
+function unlockBudget(){
+  const pw = prompt('Digite a senha para editar o Budget por Franquia:');
+  if(pw === 'dupi2026'){ _budgetUnlocked=true; orcForm(); }
+  else if(pw !== null){ alert('Senha incorreta.'); }
+}
+function lockBudget(){ _budgetUnlocked=false; orcForm(); }
+
+function orcForm(){
+  const f=document.getElementById('orcForm'); if(!f)return;
+  const lbl=document.getElementById('lockStatus');
+  if(!_budgetUnlocked){
+    if(lbl) lbl.textContent='— bloqueado';
+    // Mostra os valores, mas como texto (somente leitura)
+    f.innerHTML=FR.map(fr=>`
+      <div>
+        <label style="font-size:.68rem;color:var(--mu);display:block;margin-bottom:.22rem">Orçamento ${fr}</label>
+        <div style="background:var(--sf2);border:1px solid var(--bd);border-radius:5px;padding:.42rem .6rem;font-size:.85rem;font-weight:600;color:var(--wh)">${(D.orc[fr]/1000).toFixed(0)}k</div>
+      </div>`).join('')+`
+      <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:.4rem">
+        <button class="btn" onclick="unlockBudget()" style="white-space:nowrap">&#128275; Editar (GR)</button>
+        <div style="font-size:.62rem;color:var(--mu);text-align:center">&#128274; Edição apenas pelo Gerente Regional</div>
+      </div>`;
+    return;
+  }
+  if(lbl) lbl.textContent='— desbloqueado ✓';
+  f.innerHTML=FR.map(fr=>`<div><label>Orçamento ${fr} (R$)</label><input type="number" id="oi-${fr}" value="${D.orc[fr]}" step="1000"></div>`).join('')+`
+    <div style="display:flex;align-items:flex-end;gap:.5rem;flex-wrap:wrap">
+      <button class="btn" onclick="saveOrc()">&#10003; Salvar</button>
+      <button class="btn btn2" onclick="lockBudget()">&#128274; Bloquear</button>
+    </div>
+    <div style="grid-column:1/-1;font-size:.67rem;color:var(--mu);margin-top:.2rem">&#128274; Edição apenas pelo Gerente Regional</div>`;
+}
+
+// ── GRÁFICO DISPERSÃO (BUBBLE) por Consultor ─────────────────────────────────
+function consBubble(){
+  const ks = Object.keys(D.cons);
+  const tO = FR.reduce((s,f)=>s+D.orc[f],0);
+  // Each consultant gets a truly unique color
+  const CONS_COLORS = {
+    'Angélica Silva':   '#1d9e75',  // verde
+    'Elaíne Azevedo':   '#185fa5',  // azul
+    'Tassia Novais':    '#f59e0b',  // amarelo
+    'Silvia Cunha':     '#ef4444',  // vermelho
+    'Greice Morais':    '#a855f7',  // roxo
+    'Caroline Pereira': '#ec4899',  // rosa
+    'Vagner Elias':     '#0891b2',  // ciano
+    'Eduardo Reis':     '#f97316',  // laranja
+    'Eduardo de Deus':  '#84cc16',  // verde-limão
+    'Rafaela Correa':   '#6366f1',  // índigo
+    'Dayane Olivieri':  '#14b8a6',  // teal
+    'Regional':         '#e2e8f0',  // branco
+  };
+  const COLORS = Object.values(CONS_COLORS);
+
+  // Each consultant = one bubble
+  // x = % of total budget spent (pago+plan / total orc)
+  // y = total invested value
+  // r = proportional to investment vs franquia budget
+  const datasets = ks.map((c,i)=>{
+    const inv  = D.cons[c].pago + Math.max(D.cons[c].comp-D.cons[c].pago,0);
+    // Find the franquia budget for this consultant
+    const L    = allLancs().filter(l=>l.cons===c);
+    const fra  = L.length ? L[0].fra : 'Resp';
+    const orcF = D.orc[fra] || 1;
+    const pctF = Math.round(inv/orcF*100);
+    const pctT = tO ? Math.round(inv/tO*100) : 0;
+    const r    = Math.max(Math.sqrt(inv/500), 4);
+    return {
+      label: c==='Eduardo Reis' ? 'Edu Reis' : c==='Eduardo de Deus' ? 'Edu Deus' : c.split(' ')[0],
+      data:  [{ x: pctT, y: inv/1000, r: Math.min(r,30) }],
+      backgroundColor: (CONS_COLORS[c]||COLORS[i%COLORS.length])+'99',
+      borderColor:     (CONS_COLORS[c]||COLORS[i%COLORS.length]),
+      borderWidth: 2,
+    };
+  });
+
+  mk('cBubble','bubble',{ datasets },{
+    scales:{
+      x:{ title:{display:true,text:'% da Verba Total',color:'#8890b0',font:{size:9}},
+          ticks:{color:'#8890b0',font:{size:9},callback:v=>v+'%'},
+          grid:{color:'#2d3154'}, min:0 },
+      y:{ title:{display:true,text:'Investimento (R$ mil)',color:'#8890b0',font:{size:9}},
+          ticks:{color:'#8890b0',font:{size:9},callback:v=>'R$'+v+'k'},
+          grid:{color:'#2d3154'} }
+    },
+    plugins:{
+      legend:{labels:{color:'#8890b0',font:{size:9},boxWidth:10}},
+      tooltip:{callbacks:{
+        label: ctx=>{
+          const c = ctx.dataset.label;
+          const d = ctx.raw;
+          return [`${c}`, `Investimento: R$ ${(d.y*1000).toLocaleString('pt-BR')}`, `% verba total: ${d.x}%`];
+        }
+      }}
+    }
+  });
+}
+
+// ── GRÁFICO BURN RATE / PREVISIBILIDADE ──────────────────────────────────────
+function burnRate(){
+  const L = allLancs().filter(l=>
+    ['Speaker Meetings','Almoço','Jantar','Café','Refeição de Negócios (RN)'].includes(l.tipo)
+    && l.status === 'Pago'
+  );
+  const tO = FR.reduce((s,f)=>s+D.orc[f],0);
+  const MN_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                   'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  // Monthly spend
+  const monthlySpend = MN_FULL.map(m=>L.filter(l=>l.mes===m).reduce((s,l)=>s+l.val,0));
+
+  // Cumulative spend
+  let cum = 0;
+  const cumSpend = monthlySpend.map(v=>{ cum+=v; return cum; });
+
+  // Find last month with data
+  const lastIdx = monthlySpend.reduceRight((acc,v,i)=>acc===-1&&v>0?i:acc,-1);
+
+  // Average monthly burn (from months with data)
+  const activeMths = monthlySpend.filter(v=>v>0);
+  const avgBurn = activeMths.length ? activeMths.reduce((s,v)=>s+v,0)/activeMths.length : 0;
+
+  // Project forward
+  const projected = [...cumSpend];
+  let projCum = cumSpend[lastIdx] || 0;
+  let esgotaMes = -1;
+  for(let i=lastIdx+1;i<12;i++){
+    projCum += avgBurn;
+    projected[i] = projCum;
+    if(projCum >= tO && esgotaMes===-1) esgotaMes=i;
+  }
+
+  // Budget line
+  const budgetLine = MN_FULL.map(()=>tO);
+
+  mk('cBurnRate','line',{
+    labels: MN_FULL.map(m=>m.substring(0,3)),
+    datasets:[
+      {label:'Gasto Acumulado (Real)',    data:cumSpend.map((v,i)=>i<=lastIdx?v:null),
+       borderColor:'#1d9e75', backgroundColor:'#1d9e7522', fill:true, tension:.3, pointRadius:4, pointBackgroundColor:'#1d9e75'},
+      {label:'Projeção (Burn Rate Médio)',data:projected.map((v,i)=>i>=lastIdx?v:null),
+       borderColor:'#ba7517', borderDash:[6,3], backgroundColor:'#ba751711', fill:false, tension:.3, pointRadius:3, pointBackgroundColor:'#ba7517'},
+      {label:'Orçamento Total',           data:budgetLine,
+       borderColor:'#c62828', borderDash:[4,4], backgroundColor:'transparent', fill:false, pointRadius:0, borderWidth:2},
+    ]
+  },{
+    scales:{
+      x:{ticks:{color:'#8890b0',font:{size:9}},grid:{color:'#2d3154'}},
+      y:{ticks:{color:'#8890b0',font:{size:9},callback:v=>f0(v)},grid:{color:'#2d3154'}}
+    },
+    plugins:{
+      legend:{labels:{color:'#8890b0',font:{size:9},boxWidth:10}},
+      tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${f0(c.raw)}`}}
+    }
+  });
+
+  // Info text
+  const info = document.getElementById('burnInfo');
+  if(info){
+    const spent = cumSpend[lastIdx] || 0;
+    const saldo = tO - spent;
+    const mesesRestam = avgBurn > 0 ? Math.floor(saldo/avgBurn) : 99;
+    info.innerHTML = avgBurn > 0
+      ? `📊 Burn rate médio mensal: <b>${f0(avgBurn)}</b> &nbsp;|&nbsp; `+
+        `💰 Saldo disponível: <b>${f0(saldo)}</b> &nbsp;|&nbsp; `+
+        (esgotaMes>=0
+          ? `⚠️ Projeção de estouro: <b style="color:#c62828">${MN_FULL[esgotaMes]}</b>`
+          : `✅ Verba suficiente para mais ~<b>${mesesRestam} mês(es)</b>`)
+      : '📊 Sem dados suficientes para projeção. Lance investimentos pagos para ativar o burn rate.';
+  }
+}
+
+function tipoCharts(){
+  const L=allLancs();
+  const inds=['Asma','DPOC','DA','PN','UCE','EoE','NP'];
+  mk('cTF','bar',{labels:FR,datasets:TPS.map((t,i)=>({label:TPS_S[i],data:FR.map(f=>L.filter(l=>l.tipo===t&&l.fra===f).reduce((s,l)=>s+l.val,0)),backgroundColor:TC[i],stack:'s'}))},{scales:AX,plugins:{legend:{labels:{color:'#8890b0',font:{size:8},boxWidth:8}}}});
+  const ks=Object.keys(D.cons);
+  mk('cTC','bar',{labels:ks.map(c=>c.split(' ')[0]),datasets:TPS.map((t,i)=>({label:TPS_S[i],data:ks.map(c=>L.filter(l=>l.tipo===t&&l.cons===c).reduce((s,l)=>s+l.val,0)),backgroundColor:TC[i],stack:'s'}))},{scales:AX,plugins:{legend:{labels:{color:'#8890b0',font:{size:8},boxWidth:8}}}});
+  mk('cTI','bar',{labels:inds,datasets:TPS.map((t,i)=>({label:TPS_S[i],data:inds.map(ind=>L.filter(l=>l.tipo===t&&l.ind===ind).reduce((s,l)=>s+l.val,0)),backgroundColor:TC[i],stack:'s'}))},{scales:AX,plugins:{legend:{labels:{color:'#8890b0',font:{size:8},boxWidth:8}}}});
+}
+
+function statusCharts(){
+  const L=allLancs();
+  mk('cSQ','bar',{labels:QQ,datasets:STS.map(st=>({label:st,data:QQ.map((_,qi)=>L.filter(l=>l.status===st&&mesToQ(l.mes)===qi).reduce((s,l)=>s+l.val,0)),backgroundColor:SC[st],stack:'s'}))},{scales:AX,plugins:{legend:{labels:{color:'#8890b0',font:{size:9},boxWidth:10}}}});
+  mk('cSF','bar',{labels:FR,datasets:STS.map(st=>({label:st,data:FR.map(f=>L.filter(l=>l.status===st&&l.fra===f).length),backgroundColor:SC[st],stack:'s'}))},{scales:{x:{ticks:{color:'#8890b0'},grid:{color:'#2d3154'}},y:{ticks:{color:'#8890b0'},grid:{color:'#2d3154'}}},plugins:{legend:{labels:{color:'#8890b0',font:{size:9},boxWidth:10}}}});
+}
+
+function autoFra(){
+  const i=document.getElementById('e-ind').value;
+  const m={Asma:'Resp',DPOC:'Resp',DA:'Derma',UCE:'Derma',PN:'Derma',NP:'Rhyno',EoE:'Gastro'};
+  if(m[i])document.getElementById('e-fra').value=m[i];
+}
+
+function autoDate(datId, mesId){
+  const mes = document.getElementById(mesId).value;
+  const MF = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const mi = MF.indexOf(mes);
+  if(mi < 0) return;
+  const year = new Date().getFullYear();
+  const month = String(mi+1).padStart(2,'0');
+  // Set date input to first day of selected month
+  const datEl = document.getElementById(datId);
+  if(datEl){
+    datEl.value = `${year}-${month}-01`;
+    datEl.min   = `${year}-${month}-01`;
+    datEl.max   = `${year}-${month}-${new Date(year,mi+1,0).getDate()}`;
+  }
+}
+
+function autoFraEv(){
+  const i=document.getElementById('ev-ind').value;
+  const m={Asma:'Resp',DPOC:'Resp',DA:'Derma',UCE:'Derma',PN:'Derma',NP:'Rhyno',EoE:'Gastro'};
+  if(m[i])document.getElementById('ev-fra').value=m[i];
+}
+
+function onEvTipo(){
+  const t  = document.getElementById('ev-tipo').value;
+  const pr = document.getElementById('ev-prest');
+  const hc = document.getElementById('ev-hcps');
+  const pa = document.getElementById('ev-palest');
+  const so = document.getElementById('ev-soc');
+  const ta = document.getElementById('ev-tap');
+  const md = document.getElementById('ev-med');
+
+  const isSpeaker = t === 'Speaker Meetings';
+  const isPrest   = t === 'Apoio Prestador';
+  const isHcp     = t === 'Speaker Meetings' || t === 'Coffee Break';
+  const isSoc     = t === 'Apoio Sociedade';
+
+  // Tipo de Apoio — desabilitar para Speaker Meetings
+  ta.disabled = isSpeaker; ta.style.opacity = isSpeaker?'0.35':''; ta.style.cursor = isSpeaker?'not-allowed':'';
+  if(isSpeaker) ta.value = '';
+
+  // Prestador — só Apoio Prestador
+  pr.disabled = !isPrest; pr.style.opacity = isPrest?'':'0.35'; pr.style.cursor = isPrest?'':'not-allowed';
+  if(!isPrest) pr.value = '';
+
+  // HCPs — Speaker Meetings ou Coffee Break
+  hc.disabled = !isHcp; hc.style.opacity = isHcp?'':'0.35'; hc.style.cursor = isHcp?'':'not-allowed';
+  if(!isHcp) hc.value = '';
+
+  // Palestrantes — só Speaker Meetings
+  pa.disabled = !isSpeaker; pa.style.opacity = isSpeaker?'':'0.35'; pa.style.cursor = isSpeaker?'':'not-allowed';
+  if(!isSpeaker) pa.value = '';
+
+  // Médico — desabilitar para Speaker Meetings
+  md.disabled = isSpeaker; md.style.opacity = isSpeaker?'0.35':''; md.style.cursor = isSpeaker?'not-allowed':'';
+  if(isSpeaker) md.value = '';
+
+  // Sociedade — Apoio Sociedade
+  so.disabled = !isSoc; so.style.opacity = isSoc?'':'0.35';
+  if(!isSoc) so.value = '';
+
+  calcEvVal();
+}
+
+function onEvSts(){
+  calcEvVal();
+}
+
+function calcEvVal(){
+  const tipo   = document.getElementById('ev-tipo').value;
+  const status = document.getElementById('ev-sts').value;
+  const hcps   = parseInt(document.getElementById('ev-hcps').value) || 0;
+  const palest = parseInt(document.getElementById('ev-palest').value) || 0;
+  const hint   = document.getElementById('ev-val-hint');
+
+  if(status !== 'Planejado'){ hint.style.display='none'; return; }
+
+  let total = 0;
+  let msg   = '';
+
+  if(tipo === 'Speaker Meetings'){
+    const vHcp  = hcps   * 400;
+    const vPal  = palest * 3200;
+    total = vHcp + vPal;
+    msg   = '';
+    if(hcps)   msg += `${hcps} HCPs × R$400 = R$${vHcp.toLocaleString('pt-BR')}`;
+    if(palest) msg += (msg?' + ':'')+`${palest} palestrante(s) × R$3.200 = R$${vPal.toLocaleString('pt-BR')}`;
+    if(total)  msg += ` → Total: R$${total.toLocaleString('pt-BR')}`;
+  } else if(tipo === 'Coffee Break'){
+    total = hcps * 80;
+    if(hcps) msg = `${hcps} HCPs × R$80 = R$${total.toLocaleString('pt-BR')}`;
+  }
+
+  if(total > 0){
+    document.getElementById('ev-val').value = total.toFixed(2);
+    hint.textContent = '📊 ' + msg;
+    hint.style.display = 'block';
+  } else {
+    hint.style.display = 'none';
+  }
+}
+
+function onTipo(){
+  const t=document.getElementById('e-tipo').value;
+  const ta=document.getElementById('e-tap'),so=document.getElementById('e-soc');
+  const isBlock=t==='Refeição de Negócios (RN)'||t==='Coffee Break';
+  const isAp=t==='Apoio Sociedade'||t==='Apoio Prestador';
+  if(isBlock){ta.disabled=true;ta.value='';so.disabled=true;so.value='';}
+  else if(isAp){ta.disabled=false;so.disabled=(t!=='Apoio Sociedade');if(t!=='Apoio Sociedade')so.value='';}
+  else{ta.disabled=false;so.disabled=false;}
+}
+
+
+// ── ATUALIZA TOTAIS FINANCEIROS ───────────────────────────────────────────────
+function updateTotals(fra, cons, mes, val, status, signal){
+  if(!fra) return;
+  val = parseFloat(val)||0;
+  if(!val) return;
+  // signal = +1 para adicionar, -1 para remover
+  const s = signal;
+  const isPago = status === 'Pago';
+  // Atualiza pago/planejado
+  if(isPago){ D.pago[fra] = (D.pago[fra]||0) + s*val; if(D.cons[cons]) D.cons[cons].pago += s*val; }
+  else { D.plan[fra] = (D.plan[fra]||0) + s*val; }
+  // Sempre atualiza comprometido
+  D.comp[fra]  = (D.comp[fra]||0)  + s*val;
+  if(D.cons[cons]) D.cons[cons].comp += s*val;
+  // Atualiza saldo e %
+  D.saldo[fra] = D.orc[fra] - D.comp[fra];
+  D.pct[fra]   = D.comp[fra] / (D.orc[fra]||1);
+  // Atualiza monthly
+  const MF = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const mi = MF.indexOf(mes);
+  if(mi>=0) D.monthly[fra][mi] = (D.monthly[fra][mi]||0) + s*val;
+  // Atualiza quarters
+  const qi = mesToQ(mes);
+  if(isPago) D.qtr.pago[fra][qi] = (D.qtr.pago[fra][qi]||0) + s*val;
+  else       D.qtr.plan[fra][qi] = (D.qtr.plan[fra][qi]||0) + s*val;
+}
+
+function addEvento(){
+  const g = id => document.getElementById(id).value;
+  const ger    = g('ev-ger');
+  const cons   = g('ev-cons');
+  const ind    = g('ev-ind');
+  const fra    = g('ev-fra');
+  const status = g('ev-sts');
+  const tipo   = g('ev-tipo');
+  const tipoAp = g('ev-tap');
+  const soc    = g('ev-soc');
+  const prest  = document.getElementById('ev-prest').value.trim();
+  const hcps   = g('ev-hcps');
+  const palest = g('ev-palest');
+  const verba  = g('ev-vrb');
+  const medico = document.getElementById('ev-med').value.trim();
+  const mes    = g('ev-mes');
+  const data   = g('ev-dat');
+  const val    = parseFloat(g('ev-val'))||0;
+
+  if(!cons)   { showError('Selecione o Consultor.');return; }
+  if(!ind)    { showError('Selecione a Indicação.');return; }
+  if(!fra)    { showError('Selecione a Franquia.');return; }
+  if(!status) { showError('Selecione o Status.');return; }
+  if(!tipo)   { showError('Selecione o Tipo de Investimento.');return; }
+  if(!mes)    { showError('Selecione o Mês.');return; }
+  if(!data)   { showError('Informe a Data do evento — campo obrigatório.');document.getElementById('ev-dat').focus();return; }
+  if(!val)    { showError('Informe o Valor Total.');return; }
+
+  const lanc = {
+    ger, cons, ind, fra,
+    tipo: tipo, tipoAp, soc, prest, hcps, palest,
+    verba, medico, status, mes, data, val,
+    _tipo_origem: 'evento', _id: null
+  };
+
+  D.sess.push(lanc);
+  updateTotals(fra, cons, mes, val, status, +1);
+
+  // Limpar campos
+  ['ev-ger','ev-cons','ev-ind','ev-sts','ev-tipo','ev-tap','ev-soc','ev-vrb','ev-mes','ev-dat'].forEach(id=>{
+    const el=document.getElementById(id); if(el){el.value='';el.disabled=false;}
+  });
+  ['ev-prest','ev-hcps','ev-palest'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.value='';el.disabled=true;el.style.opacity='0.35';el.style.cursor='not-allowed';}
+  });
+  document.getElementById('ev-med').value='';
+  document.getElementById('ev-fra').value='';
+  document.getElementById('ev-val').value='';
+  document.getElementById('ev-val-hint').style.display='none';
+
+  renderLanc(); buildAll();
+  apiAdd(lanc).then(id=>{
+    if(id){ lanc._id=id; showToast(cons, medico, fmtF(val)); }
+  });
+}
+
+function addLanc(){
+  const g=id=>document.getElementById(id).value;
+  const ger=g('e-ger'),cons=g('e-cons'),ind=g('e-ind'),fra=g('e-fra');
+  const tipo=g('e-tipo'),verba=g('e-vrb');
+  const medico=document.getElementById('e-med').value.trim();
+  const mes=g('e-mes'),data=g('e-dat');
+  const val=parseFloat(g('e-val'))||0;
+  const status='Pago'; // RN é sempre Pago
+  if(!cons){showError('Selecione o Consultor.');return}
+  if(!ind){showError('Selecione a Indicação.');return}
+  if(!fra){showError('Selecione a Franquia.');return}
+  if(!tipo){showError('Selecione o Tipo de RN (Almoço, Jantar ou Café).');return}
+  if(!medico){showError('⚕️ Informe o Médico Engajado — obrigatório para RN.');document.getElementById('e-med').focus();return}
+  if(!mes){showError('Selecione o Mês.');return}
+  if(!val){showError('Informe o Valor Investido.');return}
+  const lanc = {ger,cons,ind,fra,tipo,tipoAp:'',soc:'',verba,medico,status,mes,data,val,_tipo_origem:'rn',_id:null};
+  D.sess.push(lanc);
+  updateTotals(fra, cons, mes, val, status, +1);
+  ['e-ind','e-tipo','e-vrb','e-mes','e-dat'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';if(el.disabled!==undefined)el.disabled=false;}});
+  document.getElementById('e-med').value='';document.getElementById('e-val').value='';document.getElementById('e-fra').value='';
+  renderLanc();buildAll();
+  // Envia para Google Sheets e mostra confirmação apenas quando salvo
+  apiAdd(lanc).then(id=>{
+    if(id){
+      lanc._id=id;
+      showToast(cons, medico, fmtF(val));
+    } else {
+      setBanner('⚠️ Lançamento salvo localmente — verifique a conexão','#ba7517');
+    }
+  });
+}
+
+// ── EDIT MODAL ────────────────────────────────────────────────────────────────
+let _editSource = null; // 'hist' or 'sess'
+let _editIdx    = -1;
+
+function openEditModal(source, idx){
+  _editSource = source;
+  _editIdx    = idx;
+  const l = source === 'hist' ? HIST[idx] : D.sess[idx];
+  const s = (id,v) => { const el=document.getElementById('em-'+id); if(el) el.value=v||''; };
+  s('ger',l.ger); s('cons',l.cons); s('ind',l.ind); s('fra',l.fra);
+  s('tipo',l.tipo); s('tap',l.tipoAp); s('soc',l.soc); s('vrb',l.verba);
+  s('med',l.medico); s('sts',l.status); s('mes',l.mes); s('dat',l.data);
+  s('val',l.val);
+  const modal = document.getElementById('editModal');
+  modal.style.display='flex';
+  modal.style.cssText = modal.style.cssText.replace('display: none','display: flex');
+}
+function closeEditModal(){
+  document.getElementById('editModal').style.display='none';
+  _editSource=null; _editIdx=-1;
+}
+function saveEdit(){
+  if(_editIdx<0) return;
+  const g = id => document.getElementById('em-'+id).value;
+  const updated = {
+    ger:g('ger'),cons:g('cons'),ind:g('ind'),fra:g('fra'),
+    tipo:g('tipo'),tipoAp:g('tap'),soc:g('soc'),verba:g('vrb'),
+    medico:g('med'),status:g('sts'),mes:g('mes'),data:g('dat'),
+    val:parseFloat(g('val'))||0
+  };
+  const existing = _editSource==='hist' ? HIST[_editIdx] : D.sess[_editIdx];
+  const existingId = existing._id || null;
+  updated._id = existingId;
+  // Para sessão: reverte totais antigos e aplica novos
+  if(_editSource==='sess'){
+    updateTotals(existing.fra, existing.cons, existing.mes, existing.val, existing.status, -1);
+    updateTotals(updated.fra,  updated.cons,  updated.mes,  updated.val,  updated.status,  +1);
+  }
+  if(_editSource==='hist') HIST[_editIdx]=updated;
+  else D.sess[_editIdx]=updated;
+  if(existingId) apiEdit(existingId, updated).then(()=>setBanner('✅ Edição salva no Google Sheets','#1d9e75'));
+  closeEditModal(); renderLanc(); buildAll();
+}
+
+function editEvento(source, idx){
+  const l = source==='hist' ? HIST[idx] : D.sess[idx];
+  if(!l) return;
+  // Populate ev- form fields
+  const s = (id,v)=>{ const el=document.getElementById(id); if(el) el.value=v||''; };
+  s('ev-ger',l.ger); s('ev-cons',l.cons); s('ev-ind',l.ind); s('ev-fra',l.fra);
+  s('ev-sts',l.status); s('ev-tipo',l.tipo); s('ev-tap',l.tipoAp); s('ev-soc',l.soc);
+  s('ev-vrb',l.verba); s('ev-med',l.medico); s('ev-mes',l.mes); s('ev-dat',l.data);
+  s('ev-val',l.val); s('ev-prest',l.prest||''); s('ev-hcps',l.hcps||''); s('ev-palest',l.palest||'');
+  onEvTipo();
+  // Remove the original
+  if(source==='hist') HIST.splice(idx,1);
+  else D.sess.splice(idx,1);
+  updateTotals(l.fra,l.cons,l.mes,l.val,l.status,-1);
+  renderLanc(); buildAll();
+  // Scroll to event form
+  document.getElementById('ev-ger').scrollIntoView({behavior:'smooth',block:'center'});
+  setBanner('✏️ Edite os campos e clique em Lançar Evento para salvar.','#185fa5');
+}
+
+function deleteLanc(source, idx){
+  if(!confirm('Excluir este lançamento?')) return;
+  const item = source==='hist' ? HIST[idx] : D.sess[idx];
+  const itemId = item ? item._id : null;
+  // Reverte totais para qualquer lançamento (hist ou sess carregado do Sheets)
+  if(item && item.fra && item.val){
+    updateTotals(item.fra, item.cons, item.mes, item.val, item.status, -1);
+  }
+  // Marca ID como excluído para não recarregar do Sheets
+  if(itemId) _deletedIds.add(itemId);
+  if(source==='hist') HIST.splice(idx,1);
+  else D.sess.splice(idx,1);
+  // Exclui do Google Sheets
+  if(itemId){
+    setBanner('🗑️ Excluindo do servidor...','#c62828');
+    apiDelete(itemId).then(()=>setBanner('✅ Lançamento excluído do Google Sheets','#1d9e75'));
+  } else {
+    setBanner('⚠️ Lançamento removido localmente (sem ID de servidor)','#ba7517');
+  }
+  renderLanc(); buildAll();
+}
+
+function renderLanc(){
+  const tb=document.getElementById('tLancBody'); if(!tb)return;
+  const sc={Planejado:'b-planejado',Pago:'b-pago',Adiado:'b-adiado',Cancelado:'b-cancelado'};
+  const row = (l, src, idx, bg) => {
+    const evtTipos = ['Speaker Meetings','Coffee Break','Apoio Sociedade','Apoio Prestador'];
+    const isRN = l._tipo_origem === 'rn' || !evtTipos.includes(l.tipo) || ['Almoço','Jantar','Café','Refeição de Negócios (RN)'].includes(l.tipo);
+    const rowBg = bg !== 'transparent' ? bg : (isRN ? '#1d9e7508' : '#185fa508');
+    const tipoBadge = isRN
+      ? `<span style="background:#1d9e7522;color:#6ee7b7;border:1px solid #1d9e7544;border-radius:10px;padding:.1rem .4rem;font-size:.65rem;font-weight:700">RN</span>`
+      : `<span style="background:#185fa522;color:#93c5fd;border:1px solid #185fa544;border-radius:10px;padding:.1rem .4rem;font-size:.65rem;font-weight:700">EVT</span>`;
+    const canEdit = l.status === 'Planejado' && !isRN;
+    const editBtn = canEdit
+      ? `<button onclick="editEvento('${src}',${idx})" title="Editar" style="background:#185fa522;border:1px solid #185fa544;color:#93c5fd;border-radius:4px;cursor:pointer;font-size:.8rem;padding:.2rem .4rem;margin-right:.2rem">✏️</button>`
+      : '';
+    return `<tr style="background:${rowBg}">
+    <td>${tipoBadge} ${l.cons||'—'}</td>
+    <td>${l.ind||'—'}</td>
+    <td><span class="bx b-${(l.fra||'').toLowerCase()}">${l.fra||'—'}</span></td>
+    <td style="font-size:.72rem">${l.tipo||'—'}${l.tipoAp?' · '+l.tipoAp:''}</td>
+    <td style="color:var(--mu);font-size:.7rem">${l.prest||l.soc||'—'}</td>
+    <td title="${l.medico||''}">${l.medico||'—'}</td>
+    <td><span class="bx ${sc[l.status]||''}">${l.status||'—'}</span></td>
+    <td>${l.mes||'—'}</td>
+    <td class="nr" style="white-space:nowrap">${f2(l.val)}</td>
+    <td style="white-space:nowrap;padding:.25rem .4rem;overflow:visible;text-align:center">
+      ${editBtn}
+      <button onclick="deleteLanc('${src}',${idx})" title="Excluir" style="background:#c6282822;border:1px solid #c6282844;color:#fca5a5;border-radius:4px;cursor:pointer;font-size:.85rem;padding:.2rem .45rem;font-weight:bold">✕</button>
+    </td></tr>`;
+  };
+  // Apply consultant filter
+  const filtro = (document.getElementById('filtroConsultor')||{}).value || '';
+  const filtroInfo = document.getElementById('filtroInfo');
+  const btnLimpar = document.getElementById('btnLimparFiltro');
+
+  const filterFn = l => !filtro || l.cons === filtro;
+
+  const histFiltered = HIST.filter(filterFn);
+  const sessFiltered = D.sess.filter(filterFn);
+
+  const histRows = histFiltered.map((l,i)=>row(l,'hist',HIST.indexOf(l),'transparent')).join('');
+  const sessRows = sessFiltered.map((l,i)=>row(l,'sess',D.sess.indexOf(l),'#1d9e7508')).join('');
+  const total = histFiltered.length + sessFiltered.length;
+
+  tb.innerHTML = (histRows + sessRows) || '<tr><td colspan="10" style="color:var(--mu);text-align:center;padding:1rem">Nenhum registro encontrado</td></tr>';
+
+  // Update filter info
+  if(filtroInfo){
+    filtroInfo.textContent = filtro
+      ? total + ' registro(s) de ' + filtro
+      : '';
+  }
+  if(btnLimpar){
+    btnLimpar.style.display = filtro ? 'block' : 'none';
+  }
+}
+
+function limparFiltroConsultor(){
+  const sel = document.getElementById('filtroConsultor');
+  if(sel) sel.value = '';
+  renderLanc();
+}
+
+function saveOrc(){
+  FR.forEach(f=>{
+    const v=parseFloat(document.getElementById('oi-'+f).value)||0;
+    D.orc[f]=v; D.saldo[f]=v-D.comp[f]; D.pct[f]=D.comp[f]/(v||1);
+  });
+  // Persiste no localStorage para não perder ao recarregar
+  localStorage.setItem('dupihub_budget', JSON.stringify(D.orc));
+  buildAll();
+  // Envia para Google Sheets
+  const url = localStorage.getItem('dupihub_api_url') || API_URL;
+  if(url){
+    const params = {
+      action:'saveBudget',
+      resp:  D.orc.Resp,
+      derma: D.orc.Derma,
+      rhyno: D.orc.Rhyno,
+      gastro:D.orc.Gastro
+    };
+    const qs = Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+    fetch(url+'?'+qs,{method:'GET',redirect:'follow'})
+      .then(r=>r.text())
+      .then(()=>setBanner('✅ Budget salvo no Google Sheets!','#1d9e75'))
+      .catch(()=>setBanner('✅ Budget atualizado localmente!','#1d9e75'));
+  } else {
+    setBanner('✅ Budget atualizado!','#1d9e75');
+  }
+  lockBudget();
+}
+
+function loadBudget(){
+  // Carrega budget do localStorage se disponível
+  try {
+    const saved = localStorage.getItem('dupihub_budget');
+    if(saved){
+      const b = JSON.parse(saved);
+      FR.forEach(f=>{ if(b[f]) { D.orc[f]=b[f]; D.saldo[f]=D.orc[f]-D.comp[f]; D.pct[f]=D.comp[f]/(D.orc[f]||1); }});
+    }
+  } catch(e){}
+}
+
+function resetSessao(){if(!confirm('Recarregar todos os dados do servidor?'))return;_deletedIds.clear();loadFromSheets();}
+
+function showPage(id,btn){
+  // Reset consultant filter when navigating away from lanc tab
+  if(id !== 'lanc'){
+    const filtroEl = document.getElementById('filtroConsultor');
+    if(filtroEl) filtroEl.value = '';
+  }
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  // Only remove 'on' from TOP NAV buttons (direct children of .nav)
+  document.querySelectorAll('.nav > .nb').forEach(b=>b.classList.remove('on'));
+  const pg = document.getElementById('pg-'+id);
+  if(pg) pg.classList.add('on');
+  if(btn) btn.classList.add('on');
+  if(id==='viag'){
+    ['vp-list','vp-dash','vp-agenda','vp-listas'].forEach(t=>{
+      const el=document.getElementById(t); if(el) el.style.display='none';
+    });
+    const r=document.getElementById('vp-reg'); if(r) r.style.display='block';
+    document.querySelectorAll('.vnb').forEach(b=>b.classList.remove('on'));
+    const vb=document.getElementById('vtab-reg'); if(vb) vb.classList.add('on');
+  }
+  setTimeout(buildAll,60);
+}
+
+function exportExcel(){
+  const wb=XLSX.utils.book_new();
+  const h=['Gerente','Consultor','Indicação','Franquia','Tipo Investimento','Tipo Apoio','Sociedade','Verba OI','Médico','Status','Mês','Data','Valor (R$)'];
+  const rows=allLancs().map(l=>[l.ger,l.cons,l.ind,l.fra,l.tipo,l.tipoAp,l.soc,l.verba,l.medico,l.status,l.mes,l.data,l.val]);
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([h,...rows]),'Lançamentos');
+  const hF=['Franquia','Orçamento','Pago','Planejado','Comprometido','Saldo','%'];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([hF,...FR.map(f=>[f,D.orc[f],D.pago[f],D.plan[f],D.comp[f],D.saldo[f],fp(D.pct[f])])]),'Resumo Franquia');
+  XLSX.writeFile(wb,'DupiHub_Relatorio.xlsx');
+}
+
+function exportWord(){
+  const rows=allLancs().map(l=>`<tr><td>${l.ger||'—'}</td><td>${l.cons}</td><td>${l.ind||'—'}</td><td>${l.fra||'—'}</td><td>${l.tipo||'—'}</td><td>${l.tipoAp||'—'}</td><td>${l.soc||'—'}</td><td>${l.verba||'—'}</td><td>${l.medico||'—'}</td><td>${l.status||'—'}</td><td>${l.mes||'—'}</td><td>${l.data||'—'}</td><td>R$ ${l.val.toFixed(2)}</td></tr>`).join('');
+  const fr=FR.map(f=>`<tr><td>${f}</td><td>R$ ${D.orc[f].toLocaleString('pt-BR')}</td><td>R$ ${D.pago[f].toLocaleString('pt-BR')}</td><td>R$ ${D.comp[f].toLocaleString('pt-BR')}</td><td>R$ ${D.saldo[f].toLocaleString('pt-BR')}</td><td>${fp(D.pct[f])}</td></tr>`).join('');
+  const htm=`<html><head><meta charset="UTF-8"><style>body{font-family:Arial;font-size:10pt;margin:2cm}h1{color:#1d9e75;font-size:14pt}h2{color:#185fa5;font-size:11pt;margin-top:16px}table{width:100%;border-collapse:collapse;font-size:8pt;margin-top:5px}th{background:#1a1a2e;color:white;padding:3px 5px;text-align:left}td{padding:3px 5px;border-bottom:1px solid #ddd}tr:nth-child(even)td{background:#f5f5f5}.ft{margin-top:24px;font-size:8pt;color:#888;text-align:center}</style></head><body>
+  <h1>DupiHub — Relatório Verba Regional 2026</h1><p style="color:#888;font-size:8pt">GR Marlon Costa · ${new Date().toLocaleDateString('pt-BR')}</p>
+  <h2>Resumo por Franquia</h2><table><thead><tr><th>Franquia</th><th>Orçamento</th><th>Pago</th><th>Comprometido</th><th>Saldo</th><th>%</th></tr></thead><tbody>${fr}</tbody></table>
+  <h2>Lançamentos (${allLancs().length})</h2><table><thead><tr><th>Gerente</th><th>Consultor</th><th>Indicação</th><th>Franquia</th><th>Tipo</th><th>Apoio</th><th>Sociedade</th><th>Verba</th><th>Médico</th><th>Status</th><th>Mês</th><th>Data</th><th>Valor</th></tr></thead><tbody>${rows||'<tr><td colspan="13" style="text-align:center">Sem lançamentos</td></tr>'}</tbody></table>
+  <div class="ft">Made by Marlon Costa · DupiHub v2.0 · Dupixent 2026</div>
+<!-- EDIT MODAL -->
+<div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000000aa;z-index:9999;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#1a1d27;border:1px solid #2d3154;border-radius:12px;width:100%;max-width:820px;max-height:90vh;overflow-y:auto;padding:1.4rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <div style="font-size:.9rem;font-weight:700;color:#1d9e75">&#9998; Editar Lançamento</div>
+      <button onclick="closeEditModal()" style="background:none;border:none;color:#8890b0;font-size:1.1rem;cursor:pointer">&#10005;</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem">
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Gerente Regional</label>
+        <select id="em-ger" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem">
+          <option value="">Selecione...</option>
+          <option>Marlon Costa</option><option>Carla Moraes</option><option>Jefferson Souza</option>
+          <option>José Júnior</option><option>Emerson Silva</option><option>Alexandre Poças</option>
+        </select></div>
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Consultor (CSA)</label>
+        <select id="em-cons" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem">
+          <option value="">Selecione...</option>
+          <option>Angélica Silva</option><option>Elaíne Azevedo</option><option>Tassia Novais</option>
+          <option>Silvia Cunha</option><option>Greice Morais</option><option>Caroline Pereira</option>
+          <option>Vagner Elias</option><option>Eduardo Reis</option><option>Eduardo de Deus</option>
+          <option>Rafaela Correa</option><option>Dayane Olivieri</option>
+        </select></div>
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Indicação</label>
+        <select id="em-ind" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem">
+          <option value="">Selecione...</option>
+          <option>Asma</option><option>DPOC</option><option>DA</option>
+          <option>PN</option><option>UCE</option><option>EoE</option><option>NP</option>
+        </select></div>
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Franquia</label>
+        <select id="em-fra" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem">
+          <option value="">Selecione...</option>
+          <option>Resp</option><option>Derma</option><option>Rhyno</option><option>Gastro</option>
+        </select></div>
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Tipo de Investimento</label>
+        <select id="em-tipo" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem">
+          <option value="">Selecione...</option>
+          <option>Refeição de Negócios (RN)</option><option>Speaker Meetings</option>
+          <option>Coffee Break</option><option>Apoio Sociedade</option><option>Apoio Prestador</option>
+        </select></div>
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Tipo de Apoio</label>
+        <select id="em-tap" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem">
+          <option value="">Selecione...</option>
+          <option>Jornada Regional</option><option>Congresso Local</option><option>Type 2 Dive</option>
+          <option>Evento Prestador</option><option>Cota Patrocínio</option><option>Simpósio Sociedade</option>
+          <option>Simpósio Prestador</option><option>Type 2 Ped</option>
+          <option>Speaker Meeting &lt; 7HCPs</option><option>Speaker Meeting &gt; 7HCPs</option>
+          <option>Evento Sociedade</option><option>Jornada Itinerante</option>
+          <option>Aula Mensal Sociedade</option><option>Outros</option>
+        </select></div>
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Sociedade</label>
+        <select id="em-soc" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem">
+          <option value="">Selecione...</option>
+          <option>ABORL-RJ</option><option>ABORL-ES</option><option>ASBAI-RJ</option><option>ASBAI-ES</option>
+          <option>SOPTERJ</option><option>SPES</option><option>SBD-RJ</option><option>SBD-ES</option>
+          <option>GASTRO-RJ</option><option>GASTRO-ES</option><option>SBP-RJ</option><option>SBP-ES</option>
+          <option>OUTRAS</option>
+        </select></div>
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Verba — OI</label>
+        <select id="em-vrb" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem">
+          <option value="">Selecione...</option>
+          <option>Verba Regional</option><option>Verba Marketing</option><option>Verba Mista Aporte Regional</option>
+        </select></div>
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Médico Engajado</label>
+        <input type="text" id="em-med" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem"></div>
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Status</label>
+        <select id="em-sts" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem">
+          <option value="">Selecione...</option>
+          <option>Planejado</option><option>Pago</option><option>Adiado</option><option>Cancelado</option>
+        </select></div>
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Mês</label>
+        <select id="em-mes" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem">
+          <option value="">Selecione...</option>
+          <option>Janeiro</option><option>Fevereiro</option><option>Março</option><option>Abril</option>
+          <option>Maio</option><option>Junho</option><option>Julho</option><option>Agosto</option>
+          <option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option>
+        </select></div>
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Data</label>
+        <input type="date" id="em-dat" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem"></div>
+      <div><label style="font-size:.68rem;color:#8890b0;display:block;margin-bottom:.22rem">Valor Total (R$)</label>
+        <input type="number" id="em-val" step="0.01" style="width:100%;background:#222638;border:1px solid #2d3154;border-radius:5px;padding:.42rem .6rem;color:#f0f2ff;font-size:.79rem"></div>
+    </div>
+    <div style="display:flex;gap:.6rem;margin-top:1rem;justify-content:flex-end">
+      <button onclick="closeEditModal()" style="background:#222638;border:1px solid #2d3154;color:#8890b0;border-radius:6px;padding:.44rem .9rem;font-size:.79rem;cursor:pointer">Cancelar</button>
+      <button onclick="saveEdit()" style="background:#1d9e75;color:#fff;border:none;border-radius:6px;padding:.44rem .9rem;font-size:.79rem;font-weight:600;cursor:pointer">&#10003; Salvar Alterações</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- SUCCESS TOAST -->
+<div id="successToast" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:#00000066;align-items:center;justify-content:center">
+  <div style="background:#0f1117;border:2px solid #1d9e75;border-radius:16px;padding:2rem 2.5rem;text-align:center;min-width:280px;max-width:340px;box-shadow:0 0 60px #1d9e7566;margin:auto">
+    <div style="font-size:3.5rem;margin-bottom:.6rem">✅</div>
+    <div style="font-size:1.15rem;font-weight:700;color:#1d9e75;margin-bottom:.5rem">Lançamento Concluído!</div>
+    <div id="toastConsultor" style="font-size:.85rem;color:#f0f2ff;margin-bottom:.25rem;font-weight:600"></div>
+    <div id="toastMedico" style="font-size:.8rem;color:#8890b0;margin-bottom:.25rem"></div>
+    <div id="toastValor" style="font-size:1.1rem;font-weight:700;color:#1d9e75;margin-top:.5rem;padding-top:.5rem;border-top:1px solid #2d3154"></div>
+    <div style="font-size:.7rem;color:#8890b0;margin-top:.5rem">Salvo automaticamente ☁️</div>
+    <button onclick="document.getElementById('successToast').style.display='none'" style="margin-top:1rem;background:#1d9e75;color:#fff;border:none;border-radius:6px;padding:.4rem 1.2rem;font-size:.8rem;font-weight:600;cursor:pointer">OK</button>
+  </div>
+</div>
+
+<!-- ERROR TOAST -->
+<div id="errorToast" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999">
+  <div style="background:#0f1117;border:2px solid #c62828;border-radius:16px;padding:1.5rem 2rem;text-align:center;min-width:260px;box-shadow:0 0 40px #c6282844">
+    <div style="font-size:2.5rem;margin-bottom:.5rem">⚠️</div>
+    <div id="errorMsg" style="font-size:.88rem;font-weight:600;color:#fca5a5;margin-bottom:1rem"></div>
+    <button onclick="document.getElementById('errorToast').style.display='none'" style="background:#c62828;color:#fff;border:none;border-radius:6px;padding:.45rem 1.2rem;font-size:.82rem;font-weight:600;cursor:pointer">OK</button>
+  </div>
+</div>
+
+
+</body></html>`;
+  const b=new Blob([htm],{type:'application/msword'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='DupiHub_Relatorio.doc';a.click();
+}
+
+function exportPDF(){window.print();}
+
+// ── INTEGRAÇÃO GOOGLE SHEETS ──────────────────────────────────────────────────
+// Cole aqui a URL gerada pelo Google Apps Script após implantar:
+const _DEFAULT_API = 'https://script.google.com/macros/s/AKfycbzbxo8svIsFE7knu4btCzgU7LvOvRyw0ajYvtYXWMuCM3djC0AKtihd3B950FvbKsHe/exec';
+// Sempre garante que a URL correta está salva no localStorage
+if(!localStorage.getItem('dupihub_api_url') || localStorage.getItem('dupihub_api_url').indexOf('AKfycbzbxo8sv') === -1){
+  localStorage.setItem('dupihub_api_url', _DEFAULT_API);
+}
+let API_URL = _DEFAULT_API;
+
+function setApiUrl(){
+  const url = prompt('Cole a URL do Google Apps Script:');
+  if(url && url.startsWith('https://')){
+    API_URL = url.trim();
+    localStorage.setItem('dupihub_api_url', API_URL);
+    setBanner('🔗 API conectada! Carregando dados...', '#1d9e75');
+    loadFromSheets();
+  } else if(url !== null){
+    alert('URL inválida. Deve começar com https://');
+  }
+}
+
+function setBanner(msg, color){
+  const b = document.getElementById('storeBanner');
+  if(b){ b.textContent = msg; b.style.color = color||'#1d9e75'; b.style.borderColor = (color||'#1d9e75')+'55'; b.style.background = (color||'#1d9e75')+'15'; }
+}
+
+// Carrega todos os lançamentos do Google Sheets ao abrir
+async function loadFromSheets(){
+  if(!API_URL){ setBanner('⚠️ API não configurada. Clique em "Conectar API" para configurar.','#ba7517'); return; }
+  setBanner('🔄 Carregando dados do servidor...','#185fa5');
+  try {
+    const res  = await fetch(API_URL + '?action=getAll', { method:'GET', redirect:'follow', mode:'cors' });
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); } catch(pe){ 
+      setBanner('❌ Resposta inválida da API. Verifique se a implantação está ativa.','#c62828'); 
+      return; 
+    }
+    // Aceita tanto {status:'ok', data:[...]} quanto array direto
+    const rows = Array.isArray(json) ? json : (json.data || []);
+    // Reverte totais da sessão anterior para não duplicar
+    D.sess.forEach(l=>{ if(l.fra && l.val) updateTotals(l.fra, l.cons, l.mes, l.val, l.status, -1); });
+    // Filtra linhas vazias, sanitiza valores e remove IDs já excluídos nesta sessão
+    D.sess = rows
+      .filter(l => l && l.cons && !_deletedIds.has(String(l.id||'')))
+      .map(l => ({...l, val: parseFloat(l.val)||0}));
+    // Aplica totais com dados limpos
+    D.sess.forEach(l=>{ if(l.fra && l.val) updateTotals(l.fra, l.cons, l.mes, l.val, l.status, +1); });
+    renderLanc(); buildAll();
+    setBanner('✅ ' + D.sess.length + ' lançamento(s) carregado(s) do Google Sheets.','#1d9e75');
+  } catch(e){
+    setBanner('❌ Falha na conexão: ' + e.message,'#c62828');
+  }
+}
+
+// Envia novo lançamento para o Google Sheets
+// ── API GOOGLE SHEETS ────────────────────────────────────────────────────────
+// Usa GET com parâmetros individuais — mais confiável com Apps Script + Safari
+async function gasRequest(params){
+  const url = localStorage.getItem('dupihub_api_url') || API_URL;
+  if(!url) return null;
+  try {
+    const qs = Object.entries(params)
+      .map(([k,v])=> k+'='+encodeURIComponent(String(v===null||v===undefined?'':v)))
+      .join('&');
+    const fullUrl = url + '?' + qs;
+    const res = await fetch(fullUrl, { method:'GET', redirect:'follow' });
+    const text = await res.text();
+    try{ return JSON.parse(text); }catch(e){ return {status:'ok'}; }
+  } catch(e){
+    console.error('gasRequest error:', e);
+    return null;
+  }
+}
+
+async function apiAdd(lancamento){
+  const url = localStorage.getItem('dupihub_api_url') || API_URL;
+  if(!url){
+    setBanner('⚠️ API não configurada. Clique em Conectar API.','#ba7517');
+    return null;
+  }
+  const params = {
+    action:'add',
+    ger:   lancamento.ger   ||'',
+    cons:  lancamento.cons  ||'',
+    ind:   lancamento.ind   ||'',
+    fra:   lancamento.fra   ||'',
+    tipo:  lancamento.tipo  ||'',
+    tipoAp:lancamento.tipoAp||'',
+    soc:   lancamento.soc   ||'',
+    verba: lancamento.verba ||'',
+    medico:lancamento.medico||'',
+    status:lancamento.status||'',
+    mes:   lancamento.mes   ||'',
+    data:  lancamento.data  ||'',
+    val:   lancamento.val   ||0
+  };
+  const qs = Object.entries(params)
+    .map(([k,v])=> k+'='+encodeURIComponent(String(v===null||v===undefined?'':v)))
+    .join('&');
+  const fullUrl = url + '?' + qs;
+  const localId = 'L'+Date.now();
+
+  setBanner('🔄 Enviando para Google Sheets...','#185fa5');
+
+  // Método 1: fetch normal
+  try {
+    const res  = await fetch(fullUrl, { method:'GET', mode:'cors' });
+    const text = await res.text();
+    let json; try{ json=JSON.parse(text); }catch(e){}
+    if(json && json.status==='ok'){
+      return json.id || localId;
+    }
+  } catch(e1){
+    // Método 2: fetch sem modo (fallback para Safari)
+    try {
+      const res2 = await fetch(fullUrl);
+      const text2 = await res2.text();
+      let json2; try{ json2=JSON.parse(text2); }catch(e){}
+      if(json2 && json2.status==='ok'){
+        return json2.id || localId;
+      }
+    } catch(e2){
+      // Método 3: XMLHttpRequest (mais compatível com Safari antigo)
+      try {
+        await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', fullUrl, true);
+          xhr.onload = () => resolve(xhr.responseText);
+          xhr.onerror = () => reject(new Error('XHR failed'));
+          xhr.send();
+        });
+        return localId;
+      } catch(e3){
+        setBanner('❌ Erro de conexão: ' + e3.message, '#c62828');
+        return null;
+      }
+    }
+  }
+  return localId;
+}
+
+async function apiEdit(id, lancamento){
+  if(!API_URL || !id) return;
+  await gasRequest({
+    action:'edit', id:id,
+    ger:   lancamento.ger   ||'',
+    cons:  lancamento.cons  ||'',
+    ind:   lancamento.ind   ||'',
+    fra:   lancamento.fra   ||'',
+    tipo:  lancamento.tipo  ||'',
+    tipoAp:lancamento.tipoAp||'',
+    soc:   lancamento.soc   ||'',
+    verba: lancamento.verba ||'',
+    medico:lancamento.medico||'',
+    status:lancamento.status||'',
+    mes:   lancamento.mes   ||'',
+    data:  lancamento.data  ||'',
+    val:   lancamento.val   ||0
+  });
+}
+
+async function apiDelete(id){
+  if(!API_URL || !id) return;
+  await gasRequest({action:'delete', id:id});
+}
+
+// Edita lançamento no Google Sheets
+
+
+// Deleta lançamento no Google Sheets
+
+
+function showToast(cons, medico, valor){
+  document.getElementById('toastConsultor').textContent = '👤 ' + cons;
+  document.getElementById('toastMedico').textContent = '⚕️ ' + medico;
+  document.getElementById('toastValor').textContent = valor;
+  const t = document.getElementById('successToast');
+  t.style.display = 'flex';
+  // Auto-fechar após 5 segundos
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>{ t.style.display='none'; }, 5000);
+}
+
+function showError(msg){
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorToast').style.display = 'block';
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// AGENDAR VIAGENS — versão limpa
+// ══════════════════════════════════════════════════════════════════════════════
+
+const MESES_V = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+const CIDADES_V = {
+  RJ: ['Rio de Janeiro','Niterói','Duque de Caxias','Nova Iguaçu','Belford Roxo',
+       'São Gonçalo','Petrópolis','Volta Redonda','Campos dos Goytacazes','Macaé',
+       'Cabo Frio','Angra dos Reis','Resende','Teresópolis','Barra Mansa',
+       'Magé','Itaboraí','São João de Meriti','Mesquita','Nilópolis',
+       'Queimados','Japeri','Paracambi','Seropédica','Guapimirim'],
+  ES: ['Vitória','Vila Velha','Serra','Cariacica','Linhares',
+       'Cachoeiro de Itapemirim','Colatina','Guarapari','São Mateus',
+       'Aracruz','Viana','Domingos Martins','Santa Teresa','Afonso Cláudio',
+       'Piúma','Anchieta','Iconha','Itapemirim','Marataízes']
+};
+
+let VIAGENS = [];
+try { VIAGENS = JSON.parse(localStorage.getItem('dupihub_viagens') || '[]'); } catch(e){}
+
+let _vgCalMes = new Date().getMonth();
+let _vgCalAno = new Date().getFullYear();
+
+function onVgTipoChange(){
+  const tipo    = document.getElementById('vg-tipo').value;
+  const ausEl   = document.getElementById('vg-ausencia');
+  if(!ausEl) return;
+  if(tipo){
+    // Tipo de Viagem selected — disable Ausência
+    ausEl.disabled = true;
+    ausEl.style.opacity = '0.35';
+    ausEl.style.cursor  = 'not-allowed';
+    ausEl.value = '';
+  } else {
+    // No tipo selected — enable Ausência
+    ausEl.disabled = false;
+    ausEl.style.opacity = '';
+    ausEl.style.cursor  = '';
+  }
+}
+
+function onUfChange(){
+  const uf    = document.getElementById('vg-uf').value;
+  const cidEl = document.getElementById('vg-cid');
+  const cidLbl= document.getElementById('vg-cid-label');
+  const cidades = CIDADES_V[uf] || [];
+
+  if(cidades.length){
+    cidEl.disabled = false;
+    cidEl.style.opacity = '';
+    cidEl.style.cursor = '';
+    cidEl.innerHTML = '<option value="">Selecione a cidade...</option>' +
+      cidades.map(c => `<option>${c}</option>`).join('');
+    if(cidLbl) cidLbl.innerHTML = 'Cidade <span style="color:#c62828">*</span>';
+  } else {
+    cidEl.disabled = true;
+    cidEl.style.opacity = '0.4';
+    cidEl.style.cursor = 'not-allowed';
+    cidEl.innerHTML = '<option value="">— não disponível para esta UF —</option>';
+    if(cidLbl) cidLbl.innerHTML = 'Cidade';
+  }
+}
+
+function calcDiasViag(){
+  const ida = document.getElementById('vg-ida').value;
+  const ret = document.getElementById('vg-ret').value;
+  const diasEl = document.getElementById('vg-dias');
+  if(!ida || !ret){ diasEl.value = ''; return; }
+  const d1 = new Date(ida + 'T12:00:00');
+  const d2 = new Date(ret + 'T12:00:00');
+  if(d2 < d1){
+    showError('A data de Retorno não pode ser anterior à IDA.');
+    document.getElementById('vg-ret').value = '';
+    diasEl.value = '';
+    return;
+  }
+  const diff = Math.round((d2 - d1) / (1000*60*60*24)) + 1;
+  diasEl.value = diff;
+}
+
+function limparFormViag(){
+  ['vg-cons','vg-ger','vg-uf','vg-obs','vg-tipo','vg-ausencia'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  ['vg-ida','vg-ret','vg-dias'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  const cid=document.getElementById('vg-cid');
+  if(cid){ cid.disabled=true; cid.style.opacity='0.4'; cid.style.cursor='not-allowed';
+    cid.innerHTML='<option value="">— selecione RJ ou ES para ver cidades —</option>'; }
+  const lbl=document.getElementById('vg-cid-label');
+  if(lbl) lbl.innerHTML='Cidade';
+}
+
+function salvarViagem(){
+  const g = id => (document.getElementById(id)||{}).value || '';
+  const cons    = g('vg-cons');
+  const ger     = g('vg-ger');
+  const ida     = g('vg-ida');
+  const ret     = g('vg-ret');
+  const dias    = parseInt(g('vg-dias')) || 0;
+  const uf      = g('vg-uf');
+  const cid     = g('vg-cid');
+  const obs     = g('vg-obs');
+  const tipo    = g('vg-tipo');
+  const ausencia= g('vg-ausencia');
+
+  if(!cons){ showError('Selecione o Consultor.'); return; }
+  if(!ger) { showError('Selecione o Gerente Regional.'); return; }
+  if(!ida) { showError('Informe a data de IDA.'); return; }
+  if(!ret) { showError('Informe a data de Retorno.'); return; }
+  if(!uf)  { showError('Selecione a UF.'); return; }
+  if((uf==='RJ'||uf==='ES') && !cid){ showError('Selecione a Cidade (obrigatória para RJ e ES).'); return; }
+
+  const viagem = {
+    id: 'V' + Date.now(),
+    cons, ger, ida, ret, dias, uf, cidade: cid, obs, tipo, ausencia
+  };
+
+  VIAGENS.push(viagem);
+  localStorage.setItem('dupihub_viagens', JSON.stringify(VIAGENS));
+  limparFormViag();
+  renderViagemTabela();
+  renderViagemCal();
+  setBanner('✈️ Viagem registrada com sucesso!', '#1d9e75');
+}
+
+function editarViagem(idx){
+  const v = VIAGENS[idx];
+  if(!v) return;
+  // Populate form fields
+  const s = (id,val) => { const el=document.getElementById(id); if(el) el.value=val||''; };
+  s('vg-cons',    v.cons);
+  s('vg-ger',     v.ger);
+  s('vg-ida',     v.ida);
+  s('vg-ret',     v.ret);
+  s('vg-dias',    v.dias);
+  s('vg-uf',      v.uf);
+  s('vg-obs',     v.obs);
+  s('vg-tipo',    v.tipo||'');
+  s('vg-ausencia',v.ausencia||'');
+  onVgTipoChange();
+  // Trigger city dropdown
+  onUfChange();
+  // Set city after dropdown is populated
+  setTimeout(()=>{ const el=document.getElementById('vg-cid'); if(el) el.value=v.cidade||''; }, 50);
+  // Remove from list (will be re-added on save)
+  VIAGENS.splice(idx, 1);
+  localStorage.setItem('dupihub_viagens', JSON.stringify(VIAGENS));
+  renderViagemTabela();
+  renderViagemCal();
+  // Scroll to form
+  const form = document.getElementById('vg-cons');
+  if(form) form.scrollIntoView({behavior:'smooth', block:'center'});
+  setBanner('✏️ Edite os campos e clique em Salvar Viagem para confirmar.','#185fa5');
+}
+
+function excluirViagem(idx){
+  if(!confirm('Excluir esta viagem?')) return;
+  VIAGENS.splice(idx, 1);
+  localStorage.setItem('dupihub_viagens', JSON.stringify(VIAGENS));
+  renderViagemTabela();
+  renderViagemCal();
+}
+
+function renderViagemTabela(){
+  const tb = document.getElementById('vg-tbody');
+  const ct = document.getElementById('vg-count');
+  if(!tb) return;
+  if(ct) ct.textContent = VIAGENS.length ? `${VIAGENS.length} viagem(ns) registrada(s)` : '';
+
+  if(!VIAGENS.length){
+    tb.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--mu);padding:1.5rem">Nenhuma viagem registrada ainda.</td></tr>';
+    return;
+  }
+
+  const fmt = d => d ? d.split('-').reverse().join('/') : '—';
+  tb.innerHTML = VIAGENS.map((v,i) => `
+    <tr>
+      <td><b>${v.cons}</b></td>
+      <td style="color:var(--mu);font-size:.78rem">${v.ger}</td>
+      <td style="font-size:.75rem">${v.tipo||'—'}</td>
+      <td style="font-size:.75rem;color:var(--mu)">${v.ausencia||'—'}</td>
+      <td style="white-space:nowrap">${fmt(v.ida)}</td>
+      <td style="white-space:nowrap">${fmt(v.ret)}</td>
+      <td style="text-align:center;font-weight:700;color:var(--ac)">${v.dias}</td>
+      <td>${v.uf}</td>
+      <td style="color:var(--mu);font-size:.78rem">${v.cidade||'—'}</td>
+      <td style="color:var(--mu);font-size:.72rem;max-width:120px;overflow:hidden;text-overflow:ellipsis">${v.obs||'—'}</td>
+      <td style="text-align:center;display:flex;gap:.3rem;justify-content:center;align-items:center">
+        <button onclick="editarViagem(${i})" title="Editar"
+          style="background:#185fa522;border:1px solid #185fa544;color:#93c5fd;border-radius:4px;cursor:pointer;font-size:.8rem;padding:.2rem .45rem">✏️</button>
+        <button onclick="excluirViagem(${i})" title="Excluir"
+          style="background:#c6282822;border:1px solid #c6282844;color:#fca5a5;border-radius:4px;cursor:pointer;font-size:.8rem;padding:.2rem .45rem;font-weight:700">✕</button>
+      </td>
+    </tr>`).join('');
+}
+
+function vgCalNav(d){
+  _vgCalMes += d;
+  if(_vgCalMes > 11){ _vgCalMes = 0; _vgCalAno++; }
+  if(_vgCalMes < 0) { _vgCalMes = 11; _vgCalAno--; }
+  renderViagemCal();
+}
+
+function renderViagemCal(){
+  const lbl  = document.getElementById('vg-cal-label');
+  const grid = document.getElementById('vg-cal-grid');
+  if(!lbl || !grid) return;
+
+  lbl.textContent = MESES_V[_vgCalMes] + ' / ' + _vgCalAno;
+
+  const ano  = _vgCalAno;
+  const mes  = _vgCalMes;
+  const dias = new Date(ano, mes+1, 0).getDate();
+  const ini  = new Date(ano, mes, 1).getDay(); // day of week of 1st
+
+  // Build map: dateStr -> [consultor (cidade), ...]
+  const dayMap = {};
+  VIAGENS.forEach(v => {
+    if(!v.ida || !v.ret) return;
+    const d1 = new Date(v.ida + 'T12:00:00');
+    const d2 = new Date(v.ret + 'T12:00:00');
+    for(let cur = new Date(d1); cur <= d2; cur.setDate(cur.getDate()+1)){
+      if(cur.getFullYear()===ano && cur.getMonth()===mes){
+        const day = cur.getDate();
+        if(!dayMap[day]) dayMap[day] = [];
+        const label = v.cidade ? `${v.cons.split(' ')[0]} (${v.cidade})` : v.cons.split(' ')[0];
+        dayMap[day].push({ label, cons: v.cons });
+      }
+    }
+  });
+
+  // Unique colors per consultant
+  const CONS_CAL_COLORS = {
+    'Angélica Silva':'#1d9e75','Elaíne Azevedo':'#185fa5','Tassia Novais':'#f59e0b',
+    'Silvia Cunha':'#ef4444','Greice Morais':'#a855f7','Caroline Pereira':'#ec4899',
+    'Vagner Elias':'#0891b2','Eduardo Reis':'#f97316','Eduardo de Deus':'#84cc16',
+    'Rafaela Correa':'#6366f1','Dayane Olivieri':'#14b8a6','Regional':'#e2e8f0'
+  };
+
+  let out = '';
+
+  // Empty cells before 1st
+  for(let i = 0; i < ini; i++){
+    out += '<div style="min-height:70px"></div>';
+  }
+
+  for(let d = 1; d <= dias; d++){
+    const fds    = [0,6].includes(new Date(ano, mes, d).getDay());
+    const events = dayMap[d] || [];
+    const hasBg  = events.length > 0;
+    const bg     = hasBg ? 'var(--sf)' : fds ? 'var(--sf2)' : 'var(--sf2)';
+    const bc     = hasBg ? '#1d9e7544' : 'var(--bd)';
+    const today  = new Date();
+    const isToday= today.getDate()===d && today.getMonth()===mes && today.getFullYear()===ano;
+
+    const evHtml = events.slice(0,3).map(e => {
+      const c = CONS_CAL_COLORS[e.cons] || '#8890b0';
+      return `<div style="font-size:.58rem;color:${c};font-weight:600;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${e.label}">${e.label}</div>`;
+    }).join('') + (events.length > 3 ? `<div style="font-size:.55rem;color:var(--mu)">+${events.length-3} mais</div>` : '');
+
+    out += `<div style="background:${bg};border:1px solid ${isToday?'#1d9e75':bc};border-radius:5px;padding:.3rem .35rem;min-height:70px;cursor:${hasBg?'pointer':'default'}"
+      onclick="${hasBg?`vgDayDetail(${d})`:''}">
+      <div style="font-size:.72rem;font-weight:700;color:${isToday?'#1d9e75':fds?'var(--mu)':'var(--wh)'};margin-bottom:.2rem">${d}${isToday?' ●':''}</div>
+      ${evHtml}
+    </div>`;
+  }
+
+  grid.innerHTML = out;
+}
+
+function vgDayDetail(d){var ano=_vgCalAno,mes=_vgCalMes;var pad=function(n){return String(n).padStart(2,'0');};var dateStr=ano+'-'+pad(mes+1)+'-'+pad(d);var viagens=VIAGENS.filter(function(v){return v.ida<=dateStr&&v.ret>=dateStr;});if(!viagens.length)return;var fmtD=function(s){return s?s.split('-').reverse().join('/'):'--';};var info=viagens.map(function(v){return '- '+v.cons+'\n  Gerente: '+v.ger+' | IDA: '+fmtD(v.ida)+' | Retorno: '+fmtD(v.ret)+' | '+v.dias+' dia(s)'+(v.cidade?' | '+v.uf+' - '+v.cidade:'| '+v.uf)+(v.obs?' | Obs: '+v.obs:'');}).join('\n\n');alert('Viagens em '+pad(d)+'/'+pad(mes+1)+'/'+ano+':\n\n'+info);}
+
+// Initialize viagem page when opened
+function initViagPage(){
+  renderViagemTabela();
+  renderViagemCal();
+}
+
+
+window.addEventListener('load',()=>{
+  loadBudget();
+  initAppLock();
+  buildAll();
+  renderLanc();
+  // Viagem page initialized on tab click via initViagPage()
+  // Close pw modal on backdrop click
+  document.getElementById('globalPwModal').addEventListener('click', function(e){
+    if(e.target === this) this.style.display='none';
+  });
+  // Update API button state
+  const btn = document.getElementById('apiBtn');
+  if(API_URL && btn){ btn.style.borderColor='#1d9e75'; btn.style.color='#1d9e75'; btn.textContent='🔗 API Conectada'; }
+  loadFromSheets();
+});
+</script>
+</body>
+</html>
