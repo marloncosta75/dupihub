@@ -16,7 +16,7 @@ body{background:var(--bg);color:var(--wh);font-family:Arial,sans-serif;min-heigh
 .hbtns{display:flex;align-items:center;gap:.5rem}
 .hbtns span{font-size:.7rem;color:var(--mu)}
 .xb{background:var(--sf2);border:1px solid var(--bd);color:var(--mu);font-size:.71rem;padding:.3rem .65rem;border-radius:5px;cursor:pointer;transition:all .2s}.xb:hover{color:var(--wh);border-color:var(--ac)}
-.nav{display:flex;gap:.3rem;padding:.65rem 1.5rem 0;border-bottom:1px solid var(--bd);background:var(--sf);overflow-x:auto}
+.nav{display:flex;gap:.3rem;padding:.65rem 1.5rem 0;border-bottom:1px solid var(--bd);background:var(--sf);overflow-x:auto;position:sticky;top:58px;z-index:99}
 .nb{background:none;border:none;color:var(--mu);font-size:.82rem;padding:.48rem .9rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;border-radius:4px 4px 0 0;white-space:nowrap}
 .vnb{background:none;border:none;color:var(--mu);font-size:.78rem;padding:.38rem .8rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;border-radius:4px 4px 0 0;white-space:nowrap}
 .vnb.on{color:var(--ac);border-bottom-color:var(--ac);background:var(--sf2)}
@@ -362,22 +362,30 @@ footer strong{color:var(--ac)}
       <button class="eb" style="background:#c62828" onclick="exportPDF()">&#8595; PDF</button>
     </div>
   </div>
-  <!-- FILTRO POR CONSULTOR -->
+  <!-- FILTROS -->
   <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;flex-wrap:wrap">
-    <label style="font-size:.75rem;color:var(--mu);white-space:nowrap">🔍 Filtrar por Consultor:</label>
+    <label style="font-size:.75rem;color:var(--mu);white-space:nowrap">🔍 Consultor:</label>
     <select id="filtroConsultor" onchange="renderLanc()"
-      style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:6px;padding:.3rem .6rem;font-size:.78rem;min-width:180px">
-      <option value="">— Todos os consultores —</option>
+      style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:6px;padding:.3rem .6rem;font-size:.78rem;min-width:160px">
+      <option value="">— Todos —</option>
       <option>Regional</option>
       <option>Angélica Silva</option><option>Elaíne Azevedo</option><option>Tassia Novais</option>
       <option>Silvia Cunha</option><option>Greice Morais</option><option>Caroline Pereira</option>
       <option>Vagner Elias</option><option>Eduardo Reis</option><option>Eduardo de Deus</option>
       <option>Rafaela Correa</option><option>Dayane Olivieri</option>
     </select>
+    <label style="font-size:.75rem;color:var(--mu);white-space:nowrap">Tipo:</label>
+    <select id="filtroTipo" onchange="renderLanc()"
+      style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:6px;padding:.3rem .6rem;font-size:.78rem;min-width:160px">
+      <option value="">— Todos —</option>
+      <option>Almoço</option><option>Jantar</option><option>Café</option>
+      <option>Speaker Meetings</option><option>Coffee Break</option>
+      <option>Apoio Sociedade</option><option>Apoio Prestador</option>
+    </select>
     <span id="filtroInfo" style="font-size:.72rem;color:var(--mu)"></span>
-    <button onclick="limparFiltroConsultor()" id="btnLimparFiltro"
+    <button onclick="limparFiltros()" id="btnLimparFiltro"
       style="display:none;background:#c6282815;border:1px solid #c6282833;color:#fca5a5;border-radius:5px;padding:.25rem .6rem;font-size:.72rem;cursor:pointer">
-      ✕ Limpar filtro
+      ✕ Limpar filtros
     </button>
   </div>
   <div class="cc" style="overflow-x:auto">
@@ -1221,14 +1229,16 @@ function onEvTipo(){
   const ta = document.getElementById('ev-tap');
   const md = document.getElementById('ev-med');
 
-  const isSpeaker = t === 'Speaker Meetings';
-  const isPrest   = t === 'Apoio Prestador';
-  const isHcp     = t === 'Speaker Meetings' || t === 'Coffee Break';
-  const isSoc     = t === 'Apoio Sociedade';
+  const isSpeaker   = t === 'Speaker Meetings';
+  const isCoffee    = t === 'Coffee Break';
+  const isSpeakerCB = isSpeaker || isCoffee;  // Speaker ou Coffee Break — mesmas regras
+  const isPrest     = t === 'Apoio Prestador';
+  const isHcp       = isSpeakerCB;
+  const isSoc       = t === 'Apoio Sociedade';
 
-  // Tipo de Apoio — desabilitar para Speaker Meetings
-  ta.disabled = isSpeaker; ta.style.opacity = isSpeaker?'0.35':''; ta.style.cursor = isSpeaker?'not-allowed':'';
-  if(isSpeaker) ta.value = '';
+  // Tipo de Apoio — desabilitar para Speaker e Coffee Break
+  ta.disabled = isSpeakerCB; ta.style.opacity = isSpeakerCB?'0.35':''; ta.style.cursor = isSpeakerCB?'not-allowed':'';
+  if(isSpeakerCB) ta.value = '';
 
   // Prestador — só Apoio Prestador
   pr.disabled = !isPrest; pr.style.opacity = isPrest?'':'0.35'; pr.style.cursor = isPrest?'':'not-allowed';
@@ -1242,9 +1252,9 @@ function onEvTipo(){
   pa.disabled = !isSpeaker; pa.style.opacity = isSpeaker?'':'0.35'; pa.style.cursor = isSpeaker?'':'not-allowed';
   if(!isSpeaker) pa.value = '';
 
-  // Médico — desabilitar para Speaker Meetings
-  md.disabled = isSpeaker; md.style.opacity = isSpeaker?'0.35':''; md.style.cursor = isSpeaker?'not-allowed':'';
-  if(isSpeaker) md.value = '';
+  // Médico — desabilitar para Speaker e Coffee Break
+  md.disabled = isSpeakerCB; md.style.opacity = isSpeakerCB?'0.35':''; md.style.cursor = isSpeakerCB?'not-allowed':'';
+  if(isSpeakerCB) md.value = '';
 
   // Sociedade — Apoio Sociedade
   so.disabled = !isSoc; so.style.opacity = isSoc?'':'0.35';
@@ -1533,38 +1543,43 @@ function renderLanc(){
       <button onclick="deleteLanc('${src}',${idx})" title="Excluir" style="background:#c6282822;border:1px solid #c6282844;color:#fca5a5;border-radius:4px;cursor:pointer;font-size:.85rem;padding:.2rem .45rem;font-weight:bold">✕</button>
     </td></tr>`;
   };
-  // Apply consultant filter
-  const filtro = (document.getElementById('filtroConsultor')||{}).value || '';
+  // Apply filters
+  const filtro     = (document.getElementById('filtroConsultor')||{}).value || '';
+  const filtroTipo = (document.getElementById('filtroTipo')||{}).value || '';
   const filtroInfo = document.getElementById('filtroInfo');
-  const btnLimpar = document.getElementById('btnLimparFiltro');
+  const btnLimpar  = document.getElementById('btnLimparFiltro');
 
-  const filterFn = l => !filtro || l.cons === filtro;
+  const filterFn = l => (!filtro || l.cons === filtro) && (!filtroTipo || l.tipo === filtroTipo);
 
   const histFiltered = HIST.filter(filterFn);
   const sessFiltered = D.sess.filter(filterFn);
 
   const histRows = histFiltered.map((l,i)=>row(l,'hist',HIST.indexOf(l),'transparent')).join('');
   const sessRows = sessFiltered.map((l,i)=>row(l,'sess',D.sess.indexOf(l),'#1d9e7508')).join('');
-  const total = histFiltered.length + sessFiltered.length;
+  const total    = histFiltered.length + sessFiltered.length;
 
   tb.innerHTML = (histRows + sessRows) || '<tr><td colspan="10" style="color:var(--mu);text-align:center;padding:1rem">Nenhum registro encontrado</td></tr>';
 
-  // Update filter info
   if(filtroInfo){
-    filtroInfo.textContent = filtro
-      ? total + ' registro(s) de ' + filtro
-      : '';
+    const parts = [];
+    if(filtro)     parts.push(filtro);
+    if(filtroTipo) parts.push(filtroTipo);
+    filtroInfo.textContent = parts.length ? total+' registro(s) — '+parts.join(' · ') : '';
   }
   if(btnLimpar){
-    btnLimpar.style.display = filtro ? 'block' : 'none';
+    btnLimpar.style.display = (filtro || filtroTipo) ? 'block' : 'none';
   }
 }
 
-function limparFiltroConsultor(){
-  const sel = document.getElementById('filtroConsultor');
-  if(sel) sel.value = '';
+function limparFiltros(){
+  const sc = document.getElementById('filtroConsultor');
+  const st = document.getElementById('filtroTipo');
+  if(sc) sc.value = '';
+  if(st) st.value = '';
   renderLanc();
 }
+
+function limparFiltroConsultor(){ limparFiltros(); }
 
 function saveOrc(){
   FR.forEach(f=>{
@@ -1609,10 +1624,12 @@ function loadBudget(){
 function resetSessao(){if(!confirm('Recarregar todos os dados do servidor?'))return;_deletedIds.clear();loadFromSheets();}
 
 function showPage(id,btn){
-  // Reset consultant filter when navigating away from lanc tab
+  // Reset filters when navigating away from lanc tab
   if(id !== 'lanc'){
-    const filtroEl = document.getElementById('filtroConsultor');
-    if(filtroEl) filtroEl.value = '';
+    const fc = document.getElementById('filtroConsultor');
+    const ft = document.getElementById('filtroTipo');
+    if(fc) fc.value = '';
+    if(ft) ft.value = '';
   }
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   // Only remove 'on' from TOP NAV buttons (direct children of .nav)
