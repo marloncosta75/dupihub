@@ -363,29 +363,51 @@ footer strong{color:var(--ac)}
     </div>
   </div>
   <!-- FILTROS -->
-  <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;flex-wrap:wrap">
-    <label style="font-size:.75rem;color:var(--mu);white-space:nowrap">🔍 Consultor:</label>
-    <select id="filtroConsultor" onchange="renderLanc()"
-      style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:6px;padding:.3rem .6rem;font-size:.78rem;min-width:160px">
-      <option value="">— Todos —</option>
+  <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap">
+    <span style="font-size:.72rem;color:var(--mu);font-weight:600">🔍 Filtros:</span>
+
+    <select id="filtroConsultor" onchange="renderLanc()" title="Filtrar por Consultor"
+      style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:6px;padding:.28rem .5rem;font-size:.75rem;min-width:140px">
+      <option value="">👤 Consultor</option>
       <option>Regional</option>
       <option>Angélica Silva</option><option>Elaíne Azevedo</option><option>Tassia Novais</option>
       <option>Silvia Cunha</option><option>Greice Morais</option><option>Caroline Pereira</option>
       <option>Vagner Elias</option><option>Eduardo Reis</option><option>Eduardo de Deus</option>
       <option>Rafaela Correa</option><option>Dayane Olivieri</option>
     </select>
-    <label style="font-size:.75rem;color:var(--mu);white-space:nowrap">Tipo:</label>
-    <select id="filtroTipo" onchange="renderLanc()"
-      style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:6px;padding:.3rem .6rem;font-size:.78rem;min-width:160px">
-      <option value="">— Todos —</option>
+
+    <select id="filtroTipo" onchange="renderLanc()" title="Filtrar por Tipo"
+      style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:6px;padding:.28rem .5rem;font-size:.75rem;min-width:140px">
+      <option value="">📋 Tipo</option>
       <option>Almoço</option><option>Jantar</option><option>Café</option>
       <option>Speaker Meetings</option><option>Coffee Break</option>
       <option>Apoio Sociedade</option><option>Apoio Prestador</option>
     </select>
-    <span id="filtroInfo" style="font-size:.72rem;color:var(--mu)"></span>
+
+    <select id="filtroFranquia" onchange="renderLanc()" title="Filtrar por Franquia"
+      style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:6px;padding:.28rem .5rem;font-size:.75rem;min-width:110px">
+      <option value="">🏷️ Franquia</option>
+      <option>Resp</option><option>Derma</option><option>Rhyno</option><option>Gastro</option>
+    </select>
+
+    <select id="filtroStatus" onchange="renderLanc()" title="Filtrar por Status"
+      style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:6px;padding:.28rem .5rem;font-size:.75rem;min-width:120px">
+      <option value="">📊 Status</option>
+      <option>Planejado</option><option>Pago</option><option>Adiado</option><option>Cancelado</option>
+    </select>
+
+    <select id="filtroMes" onchange="renderLanc()" title="Filtrar por Mês"
+      style="background:var(--sf2);border:1px solid var(--bd);color:var(--wh);border-radius:6px;padding:.28rem .5rem;font-size:.75rem;min-width:120px">
+      <option value="">📅 Mês</option>
+      <option>Janeiro</option><option>Fevereiro</option><option>Março</option><option>Abril</option>
+      <option>Maio</option><option>Junho</option><option>Julho</option><option>Agosto</option>
+      <option>Setembro</option><option>Outubro</option><option>Novembro</option><option>Dezembro</option>
+    </select>
+
+    <span id="filtroInfo" style="font-size:.7rem;color:var(--ac)"></span>
     <button onclick="limparFiltros()" id="btnLimparFiltro"
       style="display:none;background:#c6282815;border:1px solid #c6282833;color:#fca5a5;border-radius:5px;padding:.25rem .6rem;font-size:.72rem;cursor:pointer">
-      ✕ Limpar filtros
+      ✕ Limpar
     </button>
   </div>
   <div class="cc" style="overflow-x:auto">
@@ -1543,13 +1565,21 @@ function renderLanc(){
       <button onclick="deleteLanc('${src}',${idx})" title="Excluir" style="background:#c6282822;border:1px solid #c6282844;color:#fca5a5;border-radius:4px;cursor:pointer;font-size:.85rem;padding:.2rem .45rem;font-weight:bold">✕</button>
     </td></tr>`;
   };
-  // Apply filters
-  const filtro     = (document.getElementById('filtroConsultor')||{}).value || '';
-  const filtroTipo = (document.getElementById('filtroTipo')||{}).value || '';
-  const filtroInfo = document.getElementById('filtroInfo');
-  const btnLimpar  = document.getElementById('btnLimparFiltro');
+  // Apply all filters
+  const filtro        = (document.getElementById('filtroConsultor')||{}).value || '';
+  const filtroTipo    = (document.getElementById('filtroTipo')||{}).value || '';
+  const filtroFranquia= (document.getElementById('filtroFranquia')||{}).value || '';
+  const filtroStatus  = (document.getElementById('filtroStatus')||{}).value || '';
+  const filtroMes     = (document.getElementById('filtroMes')||{}).value || '';
+  const filtroInfo    = document.getElementById('filtroInfo');
+  const btnLimpar     = document.getElementById('btnLimparFiltro');
 
-  const filterFn = l => (!filtro || l.cons === filtro) && (!filtroTipo || l.tipo === filtroTipo);
+  const filterFn = l =>
+    (!filtro         || l.cons   === filtro) &&
+    (!filtroTipo     || l.tipo   === filtroTipo) &&
+    (!filtroFranquia || l.fra    === filtroFranquia) &&
+    (!filtroStatus   || l.status === filtroStatus) &&
+    (!filtroMes      || l.mes    === filtroMes);
 
   const histFiltered = HIST.filter(filterFn);
   const sessFiltered = D.sess.filter(filterFn);
@@ -1560,22 +1590,18 @@ function renderLanc(){
 
   tb.innerHTML = (histRows + sessRows) || '<tr><td colspan="10" style="color:var(--mu);text-align:center;padding:1rem">Nenhum registro encontrado</td></tr>';
 
+  const hasFilter = filtro || filtroTipo || filtroFranquia || filtroStatus || filtroMes;
   if(filtroInfo){
-    const parts = [];
-    if(filtro)     parts.push(filtro);
-    if(filtroTipo) parts.push(filtroTipo);
+    const parts = [filtro,filtroTipo,filtroFranquia,filtroStatus,filtroMes].filter(Boolean);
     filtroInfo.textContent = parts.length ? total+' registro(s) — '+parts.join(' · ') : '';
   }
-  if(btnLimpar){
-    btnLimpar.style.display = (filtro || filtroTipo) ? 'block' : 'none';
-  }
+  if(btnLimpar) btnLimpar.style.display = hasFilter ? 'block' : 'none';
 }
 
 function limparFiltros(){
-  const sc = document.getElementById('filtroConsultor');
-  const st = document.getElementById('filtroTipo');
-  if(sc) sc.value = '';
-  if(st) st.value = '';
+  ['filtroConsultor','filtroTipo','filtroFranquia','filtroStatus','filtroMes'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
   renderLanc();
 }
 
@@ -1624,12 +1650,11 @@ function loadBudget(){
 function resetSessao(){if(!confirm('Recarregar todos os dados do servidor?'))return;_deletedIds.clear();loadFromSheets();}
 
 function showPage(id,btn){
-  // Reset filters when navigating away from lanc tab
+  // Reset all filters when navigating away from lanc tab
   if(id !== 'lanc'){
-    const fc = document.getElementById('filtroConsultor');
-    const ft = document.getElementById('filtroTipo');
-    if(fc) fc.value = '';
-    if(ft) ft.value = '';
+    ['filtroConsultor','filtroTipo','filtroFranquia','filtroStatus','filtroMes'].forEach(id2=>{
+      const el=document.getElementById(id2); if(el) el.value='';
+    });
   }
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   // Only remove 'on' from TOP NAV buttons (direct children of .nav)
