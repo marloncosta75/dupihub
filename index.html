@@ -79,6 +79,12 @@ footer strong{color:var(--ac)}
       <span id="globalLockIcon" style="font-size:.9rem">&#128274;</span>
       <span id="globalLockLabel" style="font-size:.68rem;font-weight:600;color:#fca5a5;white-space:nowrap">Bloqueado</span>
     </div>
+    <!-- BOTÃO SINCRONIZAR -->
+    <button onclick="loadFromSheets()" title="Sincronizar com Google Sheets"
+      style="background:var(--sf2);border:1px solid var(--bd);color:var(--ac);border-radius:7px;padding:.35rem .65rem;cursor:pointer;font-size:1rem;width:38px;height:38px;display:flex;align-items:center;justify-content:center">
+      ↻
+    </button>
+
     <!-- MENU EXPORTAR -->
     <div style="position:relative">
       <button id="exportMenuBtn" onclick="toggleExportMenu()"
@@ -1867,33 +1873,35 @@ function setBanner(msg, color){
 }
 
 // Carrega todos os lançamentos do Google Sheets ao abrir
-async function loadFromSheets(){
+async function loadFromSheets(silent=false){
   const _url = localStorage.getItem('dupihub_api_url') || _DEFAULT_API;
-  if(!_url){ setBanner('⚠️ API não configurada.','#ba7517'); return; }
+  if(!_url){ if(!silent) setBanner('⚠️ API não configurada.','#ba7517'); return; }
   API_URL = _url;
-  setBanner('🔄 Carregando dados do servidor...','#185fa5');
+  if(!silent) setBanner('🔄 Carregando dados do servidor...','#185fa5');
   try {
     const res  = await fetch(_url + '?action=getAll', { method:'GET', redirect:'follow' });
     const text = await res.text();
     let json;
-    try { json = JSON.parse(text); } catch(pe){ 
-      setBanner('❌ Resposta inválida da API. Verifique se a implantação está ativa.','#c62828'); 
-      return; 
+    try { json = JSON.parse(text); } catch(pe){
+      if(!silent) setBanner('❌ Resposta inválida da API.','#c62828');
+      return;
     }
-    // Aceita tanto {status:'ok', data:[...]} quanto array direto
     const rows = Array.isArray(json) ? json : (json.data || []);
-    // Reverte totais da sessão anterior para não duplicar
+    // Reverte totais anteriores
     D.sess.forEach(l=>{ if(l.fra && l.val) updateTotals(l.fra, l.cons, l.mes, l.val, l.status, -1); });
-    // Filtra linhas vazias, sanitiza valores e remove IDs já excluídos nesta sessão
+    // Filtra e sanitiza — respeita exclusões locais desta sessão
     D.sess = rows
       .filter(l => l && l.cons && !_deletedIds.has(String(l.id||'')))
       .map(l => ({...l, val: parseFloat(l.val)||0}));
-    // Aplica totais com dados limpos
+    // Aplica totais novos
     D.sess.forEach(l=>{ if(l.fra && l.val) updateTotals(l.fra, l.cons, l.mes, l.val, l.status, +1); });
     renderLanc(); buildAll();
-    setBanner('✅ ' + D.sess.length + ' lançamento(s) carregado(s) do Google Sheets.','#1d9e75');
+    if(!silent){
+      setBanner('✅ ' + D.sess.length + ' lançamento(s) sincronizado(s).','#1d9e75');
+      setTimeout(()=>setBanner('',''), 3000);
+    }
   } catch(e){
-    setBanner('❌ Falha na conexão: ' + e.message,'#c62828');
+    if(!silent) setBanner('❌ Falha na conexão: ' + e.message,'#c62828');
   }
 }
 
@@ -2409,14 +2417,25 @@ window.addEventListener('load',()=>{
   initAppLock();
   buildAll();
   renderLanc();
-  // Viagem page initialized on tab click via initViagPage()
   // Close pw modal on backdrop click
   document.getElementById('globalPwModal').addEventListener('click', function(e){
     if(e.target === this) this.style.display='none';
   });
-  // Update API button state
-  // API auto-connected
+  // Carrega dados do Sheets ao abrir
   loadFromSheets();
+
+  // ── SINCRONIZAÇÃO AUTOMÁTICA ──────────────────────────────────────────────
+  // Recarrega dados do Sheets a cada 3 minutos
+  setInterval(()=>{
+    loadFromSheets(true); // true = silent (sem banner)
+  }, 3 * 60 * 1000);
+
+  // Recarrega quando o usuário volta para a aba/app
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'visible'){
+      loadFromSheets(true); // silent sync
+    }
+  });
 });
 </script>
 </body>
