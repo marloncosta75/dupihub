@@ -79,11 +79,12 @@ footer strong{color:var(--ac)}
       <span id="globalLockIcon" style="font-size:.9rem">&#128274;</span>
       <span id="globalLockLabel" style="font-size:.68rem;font-weight:600;color:#fca5a5;white-space:nowrap">Bloqueado</span>
     </div>
-    <!-- BOTÃO SINCRONIZAR -->
-    <button onclick="loadFromSheets()" title="Sincronizar com Google Sheets"
-      style="background:var(--sf2);border:1px solid var(--bd);color:var(--ac);border-radius:7px;padding:.35rem .65rem;cursor:pointer;font-size:1rem;width:38px;height:38px;display:flex;align-items:center;justify-content:center">
-      ↻
-    </button>
+    <!-- API STATUS -->
+    <div id="apiBtn" style="display:flex;align-items:center;gap:5px;background:var(--sf2);border:0.5px solid var(--bd);border-radius:8px;padding:5px 10px;white-space:nowrap">
+      <svg id="apiBtnIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ba7517" stroke-width="2.5" stroke-linecap="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+      <span style="font-size:12px;font-weight:500;color:var(--wh)">Sheets</span>
+      <span id="apiBtnLabel" style="font-size:11px;font-weight:500;color:#ba7517">● aguardando</span>
+    </div>
 
     <!-- MENU EXPORTAR -->
     <div style="position:relative">
@@ -1887,6 +1888,9 @@ async function loadFromSheets(silent=false){
       return;
     }
     const rows = Array.isArray(json) ? json : (json.data || []);
+      // Em sync automático/silencioso: limpa IDs deletados localmente
+    // para refletir exclusões feitas diretamente no Google Sheets
+    if(silent) _deletedIds.clear();
     // Reverte totais anteriores
     D.sess.forEach(l=>{ if(l.fra && l.val) updateTotals(l.fra, l.cons, l.mes, l.val, l.status, -1); });
     // Filtra e sanitiza — respeita exclusões locais desta sessão
@@ -1896,11 +1900,20 @@ async function loadFromSheets(silent=false){
     // Aplica totais novos
     D.sess.forEach(l=>{ if(l.fra && l.val) updateTotals(l.fra, l.cons, l.mes, l.val, l.status, +1); });
     renderLanc(); buildAll();
+    // Update API status indicator
+    const lbl = document.getElementById('apiBtnLabel');
+    const ico = document.getElementById('apiBtnIcon');
+    if(lbl){ lbl.textContent='● online'; lbl.style.color='#1d9e75'; }
+    if(ico) ico.setAttribute('stroke','#1d9e75');
     if(!silent){
       setBanner('✅ ' + D.sess.length + ' lançamento(s) sincronizado(s).','#1d9e75');
       setTimeout(()=>setBanner('',''), 3000);
     }
   } catch(e){
+    const lblE = document.getElementById('apiBtnLabel');
+    const icoE = document.getElementById('apiBtnIcon');
+    if(lblE){ lblE.textContent='● erro'; lblE.style.color='#c62828'; }
+    if(icoE) icoE.setAttribute('stroke','#c62828');
     if(!silent) setBanner('❌ Falha na conexão: ' + e.message,'#c62828');
   }
 }
