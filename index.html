@@ -829,7 +829,7 @@ function buildCalendar(){
           <span style="font-size:.7rem;color:var(--mu);min-width:35px">${dia}</span>
           <span style="flex:1;font-size:.78rem;color:var(--wh);font-weight:600">${e.cons}</span>
           <span style="font-size:.7rem;padding:.1rem .4rem;background:${c}22;color:${c};border:1px solid ${c}44;border-radius:10px">${e.tipo}</span>
-          <span style="font-size:.72rem;color:var(--ac);font-weight:600">${fmtF(e.val)}</span>
+          <span style="font-size:.72rem;color:var(--ac);font-weight:600">${f2(e.val)}</span>
         </div>`;
       }).join('');
   } else {
@@ -849,7 +849,7 @@ function calDayClick(d){
   });
   if(!evts.length) return;
   const info = evts.map(e=>
-    `• ${e.cons} — ${e.tipo}\n  Franquia: ${e.fra} | Status: ${e.status} | Valor: ${fmtF(e.val)}${e.medico?' | Médico: '+e.medico:''}`
+    `• ${e.cons} — ${e.tipo}\n  Franquia: ${e.fra} | Status: ${e.status} | Valor: ${f2(e.val)}${e.medico?' | Médico: '+e.medico:''}`
   ).join('\n\n');
   alert(`Eventos em ${d}/${String(_calMes+1).padStart(2,'0')}/${_calAno}:\n\n${info}`);
 }
@@ -1439,7 +1439,8 @@ function addEvento(){
 
   renderLanc(); buildAll();
   // Mostra confirmação imediatamente
-  showToast(cons, medico||'—', fmtF(val), tipo, data);
+  showToast(cons, medico||'—', f2(val), tipo, data);
+  setBanner('🔄 Enviando para Google Sheets...','#185fa5');
   apiAdd(lanc).then(id=>{
     if(id){ lanc._id=id; }
   });
@@ -1467,7 +1468,8 @@ function addLanc(){
   document.getElementById('e-med').value='';document.getElementById('e-val').value='';document.getElementById('e-fra').value='';
   renderLanc();buildAll();
   // Mostra confirmação imediatamente
-  showToast(cons, medico||'—', fmtF(val), tipo, data);
+  showToast(cons, medico||'—', f2(val), tipo, data);
+  setBanner('🔄 Enviando para Google Sheets...','#185fa5');
   apiAdd(lanc).then(id=>{
     if(id){ lanc._id=id; }
     else { setBanner('⚠️ Lançamento salvo localmente — verifique a conexão','#ba7517'); }
@@ -1807,7 +1809,7 @@ function exportWord(){
 
 
 <!-- SUCCESS TOAST -->
-<div id="successToast" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:#00000088;align-items:center;justify-content:center">
+<div id="successToast" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:999999;background:#00000088;align-items:center;justify-content:center">
   <div style="background:#0f1117;border:2px solid #1d9e75;border-radius:16px;padding:2rem 2.5rem;text-align:center;min-width:300px;max-width:360px;box-shadow:0 0 80px #1d9e7544;margin:auto;animation:toastIn .25s ease">
     <div style="font-size:3.8rem;margin-bottom:.5rem">✅</div>
     <div style="font-size:1.2rem;font-weight:700;color:#1d9e75;margin-bottom:.3rem">Lançamento Concluído!</div>
@@ -1944,38 +1946,48 @@ async function apiAdd(lancamento){
 
   // Método 1: fetch normal
   try {
-    const res  = await fetch(fullUrl, { method:'GET', mode:'cors' });
+    const res  = await fetch(fullUrl, { method:'GET', mode:'cors', redirect:'follow' });
     const text = await res.text();
     let json; try{ json=JSON.parse(text); }catch(e){}
     if(json && json.status==='ok'){
+      setBanner('✅ Salvo no Google Sheets com sucesso!','#1d9e75');
+      setTimeout(()=>setBanner('','#1d9e75'), 3000);
       return json.id || localId;
     }
   } catch(e1){
-    // Método 2: fetch sem modo (fallback para Safari)
+    // Método 2: fetch com redirect (fallback para Safari)
     try {
-      const res2 = await fetch(fullUrl);
+      const res2 = await fetch(fullUrl, { redirect:'follow' });
       const text2 = await res2.text();
       let json2; try{ json2=JSON.parse(text2); }catch(e){}
       if(json2 && json2.status==='ok'){
+        setBanner('✅ Salvo no Google Sheets com sucesso!','#1d9e75');
+        setTimeout(()=>setBanner('','#1d9e75'), 3000);
         return json2.id || localId;
       }
     } catch(e2){
       // Método 3: XMLHttpRequest (mais compatível com Safari antigo)
       try {
-        await new Promise((resolve, reject) => {
+        const xhrResult = await new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open('GET', fullUrl, true);
           xhr.onload = () => resolve(xhr.responseText);
           xhr.onerror = () => reject(new Error('XHR failed'));
           xhr.send();
         });
-        return localId;
+        let json3; try{ json3=JSON.parse(xhrResult); }catch(e){}
+        if(json3 && json3.status==='ok'){
+          setBanner('✅ Salvo no Google Sheets!','#1d9e75');
+          setTimeout(()=>setBanner('','#1d9e75'), 3000);
+          return json3.id || localId;
+        }
       } catch(e3){
-        setBanner('❌ Erro de conexão: ' + e3.message, '#c62828');
+        setBanner('❌ Erro ao salvar no Sheets: ' + e3.message,'#c62828');
         return null;
       }
     }
   }
+  setBanner('⚠️ Salvo localmente — verifique a conexão','#ba7517');
   return localId;
 }
 
