@@ -1557,7 +1557,9 @@ function deleteLanc(source, idx){
     setBanner('🗑️ Excluindo do servidor...','#c62828');
     apiDelete(itemId).then(()=>setBanner('✅ Lançamento excluído do Google Sheets','#1d9e75'));
   } else {
-    setBanner('⚠️ Lançamento removido localmente (sem ID de servidor)','#ba7517');
+    // HIST items don't have server IDs — silent removal is expected
+    setBanner('✅ Lançamento removido.','#1d9e75');
+    setTimeout(()=>setBanner('','#1d9e75'), 2000);
   }
   renderLanc(); buildAll();
 }
@@ -1809,17 +1811,16 @@ function exportWord(){
 
 
 <!-- SUCCESS TOAST -->
-<div id="successToast" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:999999;background:#00000088;align-items:center;justify-content:center">
-  <div style="background:#0f1117;border:2px solid #1d9e75;border-radius:16px;padding:2rem 2.5rem;text-align:center;min-width:300px;max-width:360px;box-shadow:0 0 80px #1d9e7544;margin:auto;animation:toastIn .25s ease">
-    <div style="font-size:3.8rem;margin-bottom:.5rem">✅</div>
-    <div style="font-size:1.2rem;font-weight:700;color:#1d9e75;margin-bottom:.3rem">Lançamento Concluído!</div>
-    <div id="toastTipo" style="font-size:.72rem;background:#1d9e7522;color:#6ee7b7;border:1px solid #1d9e7544;border-radius:10px;padding:.2rem .6rem;display:inline-block;margin-bottom:.6rem"></div>
-    <div id="toastConsultor" style="font-size:.88rem;color:#f0f2ff;margin-bottom:.2rem;font-weight:600"></div>
-    <div id="toastMedico" style="font-size:.8rem;color:#8890b0;margin-bottom:.2rem"></div>
-    <div id="toastData" style="font-size:.78rem;color:#8890b0;margin-bottom:.2rem"></div>
-    <div id="toastValor" style="font-size:1.15rem;font-weight:700;color:#1d9e75;margin-top:.5rem;padding-top:.5rem;border-top:1px solid #2d3154"></div>
-    <div style="font-size:.68rem;color:#8890b0;margin-top:.4rem">☁️ Salvo no Google Sheets</div>
-    <button onclick="document.getElementById('successToast').style.display='none'" style="margin-top:1rem;background:#1d9e75;color:#fff;border:none;border-radius:6px;padding:.45rem 1.5rem;font-size:.85rem;font-weight:700;cursor:pointer;letter-spacing:.03em">OK ✓</button>
+<div id="successToast" style="display:none;position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);z-index:999999;pointer-events:all">
+  <div style="background:#0d2b1f;border:1.5px solid #1d9e75;border-radius:12px;padding:1rem 1.5rem;min-width:280px;max-width:360px;box-shadow:0 8px 32px #00000099;display:flex;flex-direction:column;gap:.4rem;align-items:center;text-align:center">
+    <div style="font-size:2rem">✅</div>
+    <div style="font-size:1rem;font-weight:700;color:#1d9e75">Lançamento Concluído!</div>
+    <div id="toastTipo" style="font-size:.7rem;background:#1d9e7522;color:#6ee7b7;border:1px solid #1d9e7544;border-radius:8px;padding:.15rem .5rem"></div>
+    <div id="toastConsultor" style="font-size:.82rem;color:#f0f2ff;font-weight:600"></div>
+    <div id="toastMedico" style="font-size:.75rem;color:#8890b0"></div>
+    <div id="toastData" style="font-size:.72rem;color:#8890b0"></div>
+    <div id="toastValor" style="font-size:1rem;font-weight:700;color:#1d9e75;border-top:1px solid #1d9e7533;padding-top:.4rem;width:100%"></div>
+    <button onclick="document.getElementById('successToast').style.display='none'" style="background:#1d9e75;color:#fff;border:none;border-radius:6px;padding:.35rem 1.2rem;font-size:.8rem;font-weight:700;cursor:pointer;margin-top:.2rem">OK ✓</button>
   </div>
 </div>
 
@@ -1916,79 +1917,69 @@ async function gasRequest(params){
 
 async function apiAdd(lancamento){
   const url = localStorage.getItem('dupihub_api_url') || API_URL;
-  if(!url){
-    setBanner('⚠️ API não configurada. Clique em Conectar API.','#ba7517');
-    return null;
-  }
+  if(!url){ setBanner('⚠️ API não configurada.','#ba7517'); return null; }
+
   const params = {
     action:'add',
-    ger:   lancamento.ger   ||'',
-    cons:  lancamento.cons  ||'',
-    ind:   lancamento.ind   ||'',
-    fra:   lancamento.fra   ||'',
-    tipo:  lancamento.tipo  ||'',
-    tipoAp:lancamento.tipoAp||'',
-    soc:   lancamento.soc   ||'',
-    verba: lancamento.verba ||'',
-    medico:lancamento.medico||'',
-    status:lancamento.status||'',
-    mes:   lancamento.mes   ||'',
-    data:  lancamento.data  ||'',
-    val:   lancamento.val   ||0
+    ger:    lancamento.ger    ||'',
+    cons:   lancamento.cons   ||'',
+    ind:    lancamento.ind    ||'',
+    fra:    lancamento.fra    ||'',
+    tipo:   lancamento.tipo   ||'',
+    tipoAp: lancamento.tipoAp ||'',
+    soc:    lancamento.soc    ||'',
+    verba:  lancamento.verba  ||'',
+    medico: lancamento.medico ||'',
+    status: lancamento.status ||'',
+    mes:    lancamento.mes    ||'',
+    data:   lancamento.data   ||'',
+    val:    lancamento.val    ||0
   };
+
   const qs = Object.entries(params)
-    .map(([k,v])=> k+'='+encodeURIComponent(String(v===null||v===undefined?'':v)))
+    .map(([k,v])=>k+'='+encodeURIComponent(String(v??'')))
     .join('&');
   const fullUrl = url + '?' + qs;
-  const localId = 'L'+Date.now();
+  const localId = 'L' + Date.now();
 
   setBanner('🔄 Enviando para Google Sheets...','#185fa5');
 
-  // Método 1: fetch normal
   try {
-    const res  = await fetch(fullUrl, { method:'GET', mode:'cors', redirect:'follow' });
+    // Mesma abordagem do gasRequest que funciona — sem mode:'cors'
+    const res  = await fetch(fullUrl, { method:'GET', redirect:'follow' });
     const text = await res.text();
-    let json; try{ json=JSON.parse(text); }catch(e){}
-    if(json && json.status==='ok'){
-      setBanner('✅ Salvo no Google Sheets com sucesso!','#1d9e75');
-      setTimeout(()=>setBanner('','#1d9e75'), 3000);
+    let json;
+    try { json = JSON.parse(text); } catch(e) {}
+    if(json && json.status === 'ok'){
+      setBanner('✅ Salvo no Google Sheets!','#1d9e75');
+      setTimeout(()=>setBanner('',''), 3000);
       return json.id || localId;
+    } else {
+      setBanner('⚠️ Resposta inesperada do servidor.','#ba7517');
+      return localId;
     }
-  } catch(e1){
-    // Método 2: fetch com redirect (fallback para Safari)
+  } catch(err){
+    // Fallback: XMLHttpRequest (Safari mais antigo)
     try {
-      const res2 = await fetch(fullUrl, { redirect:'follow' });
-      const text2 = await res2.text();
-      let json2; try{ json2=JSON.parse(text2); }catch(e){}
-      if(json2 && json2.status==='ok'){
-        setBanner('✅ Salvo no Google Sheets com sucesso!','#1d9e75');
-        setTimeout(()=>setBanner('','#1d9e75'), 3000);
+      const xhrText = await new Promise((res, rej)=>{
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', fullUrl);
+        xhr.onload  = ()=> res(xhr.responseText);
+        xhr.onerror = ()=> rej(new Error('XHR falhou'));
+        xhr.send();
+      });
+      let json2;
+      try { json2 = JSON.parse(xhrText); } catch(e) {}
+      if(json2 && json2.status === 'ok'){
+        setBanner('✅ Salvo no Google Sheets!','#1d9e75');
+        setTimeout(()=>setBanner('',''), 3000);
         return json2.id || localId;
       }
-    } catch(e2){
-      // Método 3: XMLHttpRequest (mais compatível com Safari antigo)
-      try {
-        const xhrResult = await new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open('GET', fullUrl, true);
-          xhr.onload = () => resolve(xhr.responseText);
-          xhr.onerror = () => reject(new Error('XHR failed'));
-          xhr.send();
-        });
-        let json3; try{ json3=JSON.parse(xhrResult); }catch(e){}
-        if(json3 && json3.status==='ok'){
-          setBanner('✅ Salvo no Google Sheets!','#1d9e75');
-          setTimeout(()=>setBanner('','#1d9e75'), 3000);
-          return json3.id || localId;
-        }
-      } catch(e3){
-        setBanner('❌ Erro ao salvar no Sheets: ' + e3.message,'#c62828');
-        return null;
-      }
+    } catch(err2){
+      setBanner('❌ Erro de conexão: ' + err2.message,'#c62828');
     }
+    return localId;
   }
-  setBanner('⚠️ Salvo localmente — verifique a conexão','#ba7517');
-  return localId;
 }
 
 async function apiEdit(id, lancamento){
@@ -2012,8 +2003,21 @@ async function apiEdit(id, lancamento){
 }
 
 async function apiDelete(id){
-  if(!API_URL || !id) return;
-  await gasRequest({action:'delete', id:id});
+  if(!id) return;
+  const url = localStorage.getItem('dupihub_api_url') || API_URL;
+  if(!url) return;
+  try {
+    const fullUrl = url + '?action=delete&id=' + encodeURIComponent(id);
+    const res = await fetch(fullUrl, { method:'GET', redirect:'follow' });
+    const text = await res.text();
+    let json; try{ json=JSON.parse(text); }catch(e){}
+    if(json && json.status==='ok'){
+      setBanner('✅ Excluído do Google Sheets!','#1d9e75');
+      setTimeout(()=>setBanner('',''),2500);
+    }
+  } catch(e){
+    console.error('apiDelete error:', e);
+  }
 }
 
 // Edita lançamento no Google Sheets
@@ -2037,16 +2041,21 @@ document.addEventListener('click', function(e){
 });
 
 function showToast(cons, medico, valor, tipo, data){
-  const fmtD = d => d ? d.split('-').reverse().join('/') : '';
-  document.getElementById('toastTipo').textContent    = tipo || 'Lançamento';
-  document.getElementById('toastConsultor').textContent = '👤 ' + cons;
-  document.getElementById('toastMedico').textContent  = medico ? '⚕️ ' + medico : '';
-  document.getElementById('toastData').textContent    = data ? '📅 ' + fmtD(data) : '';
-  document.getElementById('toastValor').textContent   = valor;
-  const t = document.getElementById('successToast');
-  t.style.display = 'flex';
-  clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(()=>{ t.style.display='none'; }, 6000);
+  try {
+    const fmtD = d => d ? d.split('-').reverse().join('/') : '';
+    const set = (id, txt) => { const el=document.getElementById(id); if(el) el.textContent=txt; };
+    set('toastTipo',      tipo || 'Lançamento');
+    set('toastConsultor', '👤 ' + (cons||''));
+    set('toastMedico',    medico ? '⚕️ ' + medico : '');
+    set('toastData',      data ? '📅 ' + fmtD(data) : '');
+    set('toastValor',     valor||'');
+    const t = document.getElementById('successToast');
+    if(t){ 
+      t.style.display = 'block';
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(()=>{ t.style.display='none'; }, 6000);
+    }
+  } catch(err){ console.error('showToast error:', err); }
 }
 
 function showError(msg){
