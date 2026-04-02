@@ -2126,6 +2126,8 @@ function salvarViagem(){
   limparFormViag();
   renderViagemTabela();
   renderViagemCal();
+  // Envia para Google Sheets
+  apiAddViagem(viagem);
   setBanner('✈️ Viagem registrada com sucesso!', '#1d9e75');
 }
 
@@ -2161,8 +2163,11 @@ function editarViagem(idx){
 
 function excluirViagem(idx){
   if(!confirm('Excluir esta viagem?')) return;
+  const v = VIAGENS[idx];
   VIAGENS.splice(idx, 1);
   localStorage.setItem('dupihub_viagens', JSON.stringify(VIAGENS));
+  // Remove do Google Sheets
+  if(v && v.id) apiDeleteViagem(v.id);
   renderViagemTabela();
   renderViagemCal();
 }
@@ -2276,10 +2281,60 @@ function renderViagemCal(){
 
 function vgDayDetail(d){var ano=_vgCalAno,mes=_vgCalMes;var pad=function(n){return String(n).padStart(2,'0');};var dateStr=ano+'-'+pad(mes+1)+'-'+pad(d);var viagens=VIAGENS.filter(function(v){return v.ida<=dateStr&&v.ret>=dateStr;});if(!viagens.length)return;var fmtD=function(s){return s?s.split('-').reverse().join('/'):'--';};var info=viagens.map(function(v){return '- '+v.cons+'\n  Gerente: '+v.ger+' | IDA: '+fmtD(v.ida)+' | Retorno: '+fmtD(v.ret)+' | '+v.dias+' dia(s)'+(v.cidade?' | '+v.uf+' - '+v.cidade:'| '+v.uf)+(v.obs?' | Obs: '+v.obs:'');}).join('\n\n');alert('Viagens em '+pad(d)+'/'+pad(mes+1)+'/'+ano+':\n\n'+info);}
 
+// ── API VIAGENS ───────────────────────────────────────────────────────────────
+async function apiAddViagem(v){
+  const url = localStorage.getItem('dupihub_api_url') || API_URL;
+  if(!url) return;
+  try {
+    const params = {
+      action:'addViagem', id:v.id, cons:v.cons, ger:v.ger,
+      ida:v.ida, ret:v.ret, dias:v.dias, uf:v.uf,
+      cidade:v.cidade||'', tipo:v.tipo||'', ausencia:v.ausencia||'', obs:v.obs||''
+    };
+    const qs = Object.entries(params).map(([k,v2])=>k+'='+encodeURIComponent(String(v2||''))).join('&');
+    await fetch(url+'?'+qs, {method:'GET', redirect:'follow'});
+  } catch(e){ console.error('apiAddViagem error:', e); }
+}
+
+async function apiDeleteViagem(id){
+  const url = localStorage.getItem('dupihub_api_url') || API_URL;
+  if(!url || !id) return;
+  try {
+    await fetch(url+'?action=deleteViagem&id='+encodeURIComponent(id), {method:'GET', redirect:'follow'});
+  } catch(e){ console.error('apiDeleteViagem error:', e); }
+}
+
+async function loadViagensFromSheets(){
+  const url = localStorage.getItem('dupihub_api_url') || API_URL;
+  if(!url) return;
+  try {
+    setBanner('🔄 Carregando viagens...','#185fa5');
+    const res  = await fetch(url+'?action=getAllViagens', {method:'GET', redirect:'follow', mode:'cors'});
+    const text = await res.text();
+    let json; try{ json=JSON.parse(text); }catch(e){ return; }
+    if(json && json.status==='ok' && Array.isArray(json.data) && json.data.length > 0){
+      // Merge: keep local viagens not yet on server + server viagens
+      const serverIds = new Set(json.data.map(v=>v.id));
+      const localOnly = VIAGENS.filter(v => !serverIds.has(v.id));
+      VIAGENS = [...json.data, ...localOnly];
+      localStorage.setItem('dupihub_viagens', JSON.stringify(VIAGENS));
+      setBanner('✅ '+VIAGENS.length+' viagem(ns) carregada(s).','#1d9e75');
+    } else {
+      setBanner('','#1d9e75');
+    }
+    renderViagemTabela();
+    renderViagemCal();
+  } catch(e){
+    console.error('loadViagensFromSheets error:', e);
+  }
+}
+
 // Initialize viagem page when opened
 function initViagPage(){
   renderViagemTabela();
   renderViagemCal();
+  // Load from Sheets to get latest data from all devices
+  loadViagensFromSheets();
 }
 
 
