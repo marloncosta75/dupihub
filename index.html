@@ -105,6 +105,9 @@ footer strong{color:var(--ac)}
         <button onclick="exportPDF();toggleExportMenu()" style="width:100%;background:none;border:none;color:var(--wh);padding:.6rem 1rem;text-align:left;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:.6rem;border-top:1px solid var(--bd)">
           <span style="color:#c62828;font-size:.9rem">⬇</span> PDF
         </button>
+        <button onclick="showPage('wbs',this);toggleExportMenu()" style="width:100%;background:none;border:none;color:var(--ac);padding:.6rem 1rem;text-align:left;cursor:pointer;font-size:.82rem;display:flex;align-items:center;gap:.6rem;border-top:1px solid var(--bd)">
+          <span style="font-size:.9rem">📊</span> CC &amp; WBS
+        </button>
       </div>
     </div>
   </div>
@@ -451,6 +454,122 @@ footer strong{color:var(--ac)}
       </tr></thead>
       <tbody id="tLancBody"></tbody>
     </table>
+  </div>
+</div>
+
+<!-- CENTRO DE CUSTOS E WBS -->
+<div id="pg-wbs" class="pg">
+  <div class="app-blur" style="padding:1.5rem 0">
+
+    <!-- Header da aba -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;flex-wrap:wrap;gap:1rem">
+      <div>
+        <div style="font-size:.7rem;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.3rem">Referência</div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--wh)">Centro de Custos <span style="color:var(--mu);font-weight:400">&</span> WBS</div>
+        <div style="font-size:.75rem;color:var(--mu);margin-top:.2rem">Força de Vendas 2026 — RJ/ES Marlon Costa</div>
+      </div>
+      <button onclick="showPage('dash',null)" style="background:var(--sf2);border:1px solid var(--bd);color:var(--mu);border-radius:7px;padding:.35rem .8rem;cursor:pointer;font-size:.75rem">← Voltar</button>
+    </div>
+
+    <!-- CENTROS DE CUSTO -->
+    <div class="stit" style="margin-bottom:1rem">Centros de Custo</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;margin-bottom:2rem">
+
+      <!-- ASMA -->
+      <div style="background:linear-gradient(135deg,#f59e0b22,#f59e0b08);border:1px solid #f59e0b44;border-radius:12px;padding:1rem 1.2rem;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:#f59e0b;border-radius:4px 0 0 4px"></div>
+        <div style="font-size:.62rem;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">CC Asma</div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--wh);font-family:monospace;letter-spacing:.05em">BR0200165</div>
+        <div style="font-size:.68rem;color:var(--mu);margin-top:.3rem">Indicação · Resp</div>
+      </div>
+
+      <!-- DPOC -->
+      <div style="background:linear-gradient(135deg,#f9731622,#f9731608);border:1px solid #f9731644;border-radius:12px;padding:1rem 1.2rem;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:#f97316;border-radius:4px 0 0 4px"></div>
+        <div style="font-size:.62rem;font-weight:700;color:#f97316;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">CC DPOC</div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--wh);font-family:monospace;letter-spacing:.05em">BR0200168</div>
+        <div style="font-size:.68rem;color:var(--mu);margin-top:.3rem">Indicação · Resp</div>
+      </div>
+
+      <!-- NP -->
+      <div style="background:linear-gradient(135deg,#1d9e7522,#1d9e7508);border:1px solid #1d9e7544;border-radius:12px;padding:1rem 1.2rem;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:#1d9e75;border-radius:4px 0 0 4px"></div>
+        <div style="font-size:.62rem;font-weight:700;color:#1d9e75;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">CC NP</div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--wh);font-family:monospace;letter-spacing:.05em">BR0200166</div>
+        <div style="font-size:.68rem;color:var(--mu);margin-top:.3rem">Indicação · Rhyno</div>
+      </div>
+
+      <!-- EOE -->
+      <div style="background:linear-gradient(135deg,#185fa522,#185fa508);border:1px solid #185fa544;border-radius:12px;padding:1rem 1.2rem;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:#185fa5;border-radius:4px 0 0 4px"></div>
+        <div style="font-size:.62rem;font-weight:700;color:#185fa5;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">CC EoE</div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--wh);font-family:monospace;letter-spacing:.05em">BR0200167</div>
+        <div style="font-size:.68rem;color:var(--mu);margin-top:.3rem">Indicação · Gastro</div>
+      </div>
+
+      <!-- DERMA -->
+      <div style="background:linear-gradient(135deg,#8890b022,#8890b008);border:1px solid #8890b044;border-radius:12px;padding:1rem 1.2rem;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:#8890b0;border-radius:4px 0 0 4px"></div>
+        <div style="font-size:.62rem;font-weight:700;color:#8890b0;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">CC Derma</div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--wh);font-family:monospace;letter-spacing:.05em">BR0200164</div>
+        <div style="font-size:.68rem;color:var(--mu);margin-top:.3rem">Indicação · Derma</div>
+      </div>
+
+    </div>
+
+    <!-- WBS REGIONAIS -->
+    <div class="stit" style="margin-bottom:1rem">WBS Regionais — Força de Vendas 2026</div>
+    <div style="display:flex;flex-direction:column;gap:.5rem">
+
+      <div style="display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:.8rem 1.1rem">
+        <div>
+          <div style="font-size:.72rem;color:var(--mu);margin-bottom:.2rem">Tutoria</div>
+          <div style="font-size:.9rem;font-weight:600;color:var(--wh)">Resp (Asma & DPOC)</div>
+        </div>
+        <div style="font-size:.75rem;font-family:monospace;font-weight:700;color:var(--ac);background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:.3rem .7rem;white-space:nowrap">DPC-SFBRDUP26-00000000008</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;background:var(--sf2);border:1px solid #f59e0b33;border-radius:10px;padding:.8rem 1.1rem">
+        <div>
+          <div style="font-size:.72rem;color:var(--mu);margin-bottom:.2rem">Verba Regional</div>
+          <div style="font-size:.9rem;font-weight:600;color:var(--wh)">RESP — RJ/ES Marlon</div>
+        </div>
+        <div style="font-size:.75rem;font-family:monospace;font-weight:700;color:#f59e0b;background:#f59e0b11;border:1px solid #f59e0b33;border-radius:6px;padding:.3rem .7rem;white-space:nowrap">DPC-SFBRDUP26-00000000007</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;background:var(--sf2);border:1px solid #1d9e7533;border-radius:10px;padding:.8rem 1.1rem">
+        <div>
+          <div style="font-size:.72rem;color:var(--mu);margin-bottom:.2rem">Verba Regional</div>
+          <div style="font-size:.9rem;font-weight:600;color:var(--wh)">NP — RJ/ES Marlon</div>
+        </div>
+        <div style="font-size:.75rem;font-family:monospace;font-weight:700;color:#1d9e75;background:#1d9e7511;border:1px solid #1d9e7533;border-radius:6px;padding:.3rem .7rem;white-space:nowrap">DPC-SFBRDUN26-00000000007</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;background:var(--sf2);border:1px solid #185fa533;border-radius:10px;padding:.8rem 1.1rem">
+        <div>
+          <div style="font-size:.72rem;color:var(--mu);margin-bottom:.2rem">Verba Regional</div>
+          <div style="font-size:.9rem;font-weight:600;color:var(--wh)">EOE — RJ/ES Marlon</div>
+        </div>
+        <div style="font-size:.75rem;font-family:monospace;font-weight:700;color:#185fa5;background:#185fa511;border:1px solid #185fa533;border-radius:6px;padding:.3rem .7rem;white-space:nowrap">DPC-SFBRDUE26-00000000007</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:.8rem 1.1rem">
+        <div>
+          <div style="font-size:.72rem;color:var(--mu);margin-bottom:.2rem">Tutoria</div>
+          <div style="font-size:.9rem;font-weight:600;color:var(--wh)">UCE</div>
+        </div>
+        <div style="font-size:.75rem;font-family:monospace;font-weight:700;color:var(--mu);background:var(--sf);border:1px solid var(--bd);border-radius:6px;padding:.3rem .7rem;white-space:nowrap">DPC-MKBRDUU26-00000000004</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;background:var(--sf2);border:1px solid #8890b033;border-radius:10px;padding:.8rem 1.1rem">
+        <div>
+          <div style="font-size:.72rem;color:var(--mu);margin-bottom:.2rem">Verba Regional</div>
+          <div style="font-size:.9rem;font-weight:600;color:var(--wh)">DERMA — RJ/ES Marlon</div>
+        </div>
+        <div style="font-size:.75rem;font-family:monospace;font-weight:700;color:#8890b0;background:#8890b011;border:1px solid #8890b033;border-radius:6px;padding:.3rem .7rem;white-space:nowrap">DPC-SFBRDUA26-00000000007</div>
+      </div>
+
+    </div>
   </div>
 </div>
 
