@@ -1449,7 +1449,7 @@ function addEvento(){
   showToast(cons, medico||'—', f2(val), tipo, data);
   setBanner('🔄 Enviando para Google Sheets...','#185fa5');
   apiAdd(lanc).then(id=>{
-    if(id){ lanc._id=id; }
+    if(id){ lanc._id=id; lanc.id=id; }
   });
 }
 
@@ -1478,7 +1478,7 @@ function addLanc(){
   showToast(cons, medico||'—', f2(val), tipo, data);
   setBanner('🔄 Enviando para Google Sheets...','#185fa5');
   apiAdd(lanc).then(id=>{
-    if(id){ lanc._id=id; }
+    if(id){ lanc._id=id; lanc.id=id; }
     else { setBanner('⚠️ Lançamento salvo localmente — verifique a conexão','#ba7517'); }
   });
 }
@@ -1550,7 +1550,8 @@ function editEvento(source, idx){
 function deleteLanc(source, idx){
   if(!confirm('Excluir este lançamento?')) return;
   const item = source==='hist' ? HIST[idx] : D.sess[idx];
-  const itemId = item ? item._id : null;
+  // Sheets items use .id, locally added use ._id
+  const itemId = item ? (item.id || item._id || null) : null;
   // Reverte totais para qualquer lançamento (hist ou sess carregado do Sheets)
   if(item && item.fra && item.val){
     updateTotals(item.fra, item.cons, item.mes, item.val, item.status, -1);
@@ -1896,7 +1897,16 @@ async function loadFromSheets(silent=false){
     // Filtra e sanitiza — respeita exclusões locais desta sessão
     D.sess = rows
       .filter(l => l && l.cons && !_deletedIds.has(String(l.id||'')))
-      .map(l => ({...l, val: parseFloat(l.val)||0}));
+      .map(l => {
+        // Normalize data field — ensure YYYY-MM-DD format
+        let dataStr = String(l.data||'').trim();
+        // If date came as DD/MM/YYYY convert to YYYY-MM-DD
+        if(dataStr.match(/^\d{2}\/\d{2}\/\d{4}$/)){
+          const [d,m,y] = dataStr.split('/');
+          dataStr = y+'-'+m+'-'+d;
+        }
+        return {...l, val: parseFloat(l.val)||0, data: dataStr, id: String(l.id||'')};
+      });
     // Aplica totais novos
     D.sess.forEach(l=>{ if(l.fra && l.val) updateTotals(l.fra, l.cons, l.mes, l.val, l.status, +1); });
     renderLanc(); buildAll();
