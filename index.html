@@ -992,46 +992,8 @@ function buildCalendar(){
   }
   cal.innerHTML = out;
 
-  // Lista de eventos do mês — Planejado em itálico, Pago normal — ambos negrito
-  if(evts.length){
-    const sorted = [...evts].sort((a,b)=>(a.data||'zzz').localeCompare(b.data||'zzz'));
-    const total  = evts.length;
-    const pagos  = evts.filter(e=>e.status==='Pago').length;
-    const plan   = total - pagos;
-
-    list.innerHTML =
-      `<div style="display:flex;gap:1rem;font-size:.7rem;color:var(--mu);margin-bottom:.6rem;flex-wrap:wrap">
-        <span>Total: <b style="color:var(--wh)">${total}</b></span>
-        <span>✅ Pago: <b style="color:#1d9e75">${pagos}</b></span>
-        <span>📅 Planejado: <b style="color:#185fa5">${plan}</b></span>
-      </div>` +
-      sorted.map(e=>{
-        const c      = CAL_CORES[e.tipo] || '#8890b0';
-        const isPlan = e.status === 'Planejado';
-        const dia    = e.data && e.data.startsWith(mesPrefix)
-          ? parseInt(e.data.split('-')[2])+'/'+String(_calMes+1).padStart(2,'0')
-          : 'sem data';
-        // Planejado = itálico + negrito | Pago = normal + negrito
-        const nameStyle = isPlan
-          ? 'font-weight:700;font-style:italic;color:#93c5fd'
-          : 'font-weight:700;font-style:normal;color:var(--wh)';
-        const statusBadge = isPlan
-          ? `<span style="font-size:.62rem;color:#185fa5;border:1px solid #185fa544;border-radius:8px;padding:.1rem .35rem;font-style:italic">Planejado</span>`
-          : `<span style="font-size:.62rem;color:#1d9e75;border:1px solid #1d9e7544;border-radius:8px;padding:.1rem .35rem">Pago</span>`;
-        return `<div style="display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;background:var(--sf2);border-left:3px solid ${isPlan?'#185fa5':c};border-radius:0 5px 5px 0;margin-bottom:.3rem;opacity:${isPlan?'.85':'1'}">
-          <span style="font-size:.68rem;color:var(--mu);min-width:38px">${dia}</span>
-          <span style="flex:1;font-size:.78rem;${nameStyle}">${e.cons}</span>
-          <span style="font-size:.68rem;padding:.1rem .4rem;background:${c}22;color:${c};border:1px solid ${c}44;border-radius:10px">${e.tipo}</span>
-          ${statusBadge}
-          <span style="font-size:.7rem;color:var(--ac);font-weight:600">${f2(e.val)}</span>
-        </div>`;
-      }).join('');
-  } else {
-    list.innerHTML = `<div style="text-align:center;color:var(--mu);font-size:.78rem;padding:1rem">
-      Nenhum evento para ${MESES_NOME[_calMes]}.<br>
-      <span style="font-size:.68rem">Navegue para o mês dos seus lançamentos.</span>
-    </div>`;
-  }
+  // Limpa lista abaixo — não exibir
+  if(list) list.innerHTML = '';
 }
 
 function calDayClick(d){
