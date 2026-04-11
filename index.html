@@ -181,7 +181,7 @@ footer strong{color:var(--ac)}
         <span style="display:flex;align-items:center;gap:.3rem"><span style="width:10px;height:10px;border-radius:50%;background:#ba7517;display:inline-block"></span>Apoio</span>
       </div>
     </div>
-    <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;font-size:.7rem"></div>
+    <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;font-size:.7rem;align-items:start"></div>
     <div id="calEventList" style="margin-top:1rem;font-size:.78rem"></div>
   </div>
 </div></div>
@@ -701,6 +701,23 @@ footer strong{color:var(--ac)}
     <div id="vg-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px"></div>
   </div>
 
+  <!-- LISTA RESUMIDA DE VIAGENS -->
+  <div class="stit" style="margin-top:1.5rem">Registros de Viagens</div>
+  <div class="cc" style="overflow-x:auto">
+    <table class="dt" id="vg-resumo">
+      <thead><tr>
+        <th>Consultor</th>
+        <th>Cidade</th>
+        <th>IDA</th>
+        <th>Retorno</th>
+        <th>Dias</th>
+        <th>Mês</th>
+        <th>Tipo</th>
+      </tr></thead>
+      <tbody id="vg-resumo-body"></tbody>
+    </table>
+  </div>
+
 </div>
 <!-- END AGENDA DE VIAGENS -->
 
@@ -867,31 +884,26 @@ function buildCalendar(){
   if(!lbl) return;
   lbl.textContent = MESES_NOME[_calMes] + ' / ' + _calAno;
 
-  const cal   = document.getElementById('calGrid');
-  const list  = document.getElementById('calEventList');
+  const cal  = document.getElementById('calGrid');
+  const list = document.getElementById('calEventList');
   if(!cal) return;
 
-  // Get events (Eventos e Apoios with dates) for this month
-  const mesNome = MESES_NOME[_calMes];
+  const mesNome   = MESES_NOME[_calMes];
   const mesPrefix = _calAno+'-'+String(_calMes+1).padStart(2,'0');
+  const EVT_TIPOS = ['Speaker Meetings','Coffee Break','Apoio Sociedade','Apoio Prestador'];
+
+  // Busca TODOS os eventos do mês — por data OU por nome do mês
   const evts = allLancs().filter(l=>{
-    const isEvt = ['Speaker Meetings','Coffee Break','Apoio Sociedade','Apoio Prestador'].includes(l.tipo);
-    if(!isEvt) return false;
-    // Match by date (most precise)
+    if(!EVT_TIPOS.includes(l.tipo)) return false;
+    // Match por data exata no mês/ano do calendário (mais preciso)
     if(l.data && l.data.startsWith(mesPrefix)) return true;
-    // Match by mes name AND year (for events without date or with date in same month)
-    if(l.mes === mesNome){
-      // If has a date, only show if date matches this calendar year
-      if(l.data && l.data.length >= 4){
-        return l.data.startsWith(String(_calAno));
-      }
-      // No date — show in list but not on specific day
-      return true;
-    }
+    // Match por nome do mês — mostra SEMPRE que o mês bate
+    // (inclui eventos sem data ou com data incompleta)
+    if(l.mes === mesNome) return true;
     return false;
   });
 
-  // Also get RN for this month (optional - show as dots)
+  // RN dots
   const rns = allLancs().filter(l=>{
     const isRN = ['Almoço','Jantar','Café','Refeição de Negócios (RN)'].includes(l.tipo);
     return isRN && l.mes === mesNome;
@@ -899,19 +911,31 @@ function buildCalendar(){
 
   const dias  = new Date(_calAno, _calMes+1, 0).getDate();
   const start = new Date(_calAno, _calMes, 1).getDay();
-  const DIAS_HDR = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 
-  // Build day → events map
+  // Mapa dia → eventos
+  // Normaliza data: aceita YYYY-MM-DD, DD/MM/YYYY ou timestamp
+  const normDate = d => {
+    if(!d) return '';
+    d = String(d).trim();
+    if(d.match(/^\d{4}-\d{2}-\d{2}/)) return d.substring(0,10);
+    if(d.match(/^\d{2}\/\d{2}\/\d{4}/)){
+      const [dd,mm,yy] = d.split('/'); return yy+'-'+mm+'-'+dd;
+    }
+    return d;
+  };
   const dayEvts = {};
   evts.forEach(e=>{
-    if(e.data){
-      const day = parseInt(e.data.split('-')[2]);
-      if(!dayEvts[day]) dayEvts[day]=[];
-      dayEvts[day].push(e);
+    const dt = normDate(e.data);
+    if(dt && dt.startsWith(mesPrefix)){
+      const day = parseInt(dt.split('-')[2]);
+      if(!isNaN(day) && day >= 1 && day <= 31){
+        if(!dayEvts[day]) dayEvts[day]=[];
+        dayEvts[day].push({...e, data: dt});
+      }
     }
   });
 
-  let out = DIAS_HDR.map(d=>
+  let out = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d=>
     `<div style="text-align:center;font-weight:700;color:var(--mu);font-size:.66rem;padding:.3rem;border-bottom:1px solid var(--bd)">${d}</div>`
   ).join('');
 
@@ -920,48 +944,92 @@ function buildCalendar(){
   for(let d=1;d<=dias;d++){
     const fds    = [0,6].includes(new Date(_calAno,_calMes,d).getDay());
     const dayEvs = dayEvts[d] || [];
-    const hasRN  = rns.some(r=>{
-      if(r.data){ return parseInt(r.data.split('-')[2])===d; }
-      return false;
-    });
-    const bg = dayEvs.length ? 'var(--sf)' : fds ? 'var(--sf2)' : 'var(--sf2)';
-    const bc = dayEvs.length ? '#185fa5' : 'var(--bd)';
+    const bc     = dayEvs.length ? '#185fa5' : 'var(--bd)';
+    const bg     = dayEvs.length ? 'var(--sf)' : 'var(--sf2)';
 
-    const dots = dayEvs.slice(0,3).map(e=>{
-      const c = CAL_CORES[e.tipo] || '#8890b0';
-      return `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c};margin:.5px" title="${e.cons} — ${e.tipo}"></span>`;
+    // Cores por consultor
+    const CC = {
+      'Angélica Silva':'#1d9e75','Elaíne Azevedo':'#185fa5','Tassia Novais':'#f59e0b',
+      'Silvia Cunha':'#ef4444','Greice Morais':'#a855f7','Caroline Pereira':'#ec4899',
+      'Vagner Elias':'#0891b2','Eduardo Reis':'#f97316','Eduardo de Deus':'#84cc16',
+      'Rafaela Correa':'#6366f1','Dayane Olivieri':'#14b8a6','Regional':'#e2e8f0'
+    };
+    // Render cada evento como pill dentro da célula
+    const eventPills = dayEvs.slice(0,3).map(e=>{
+      const c      = CC[e.cons] || '#8890b0';
+      const isPlan = e.status === 'Planejado';
+      // Abreviação: primeiro nome
+      const partes = (e.cons||'').split(' ');
+      const nome   = partes[0] || '—';
+      return `<div style="
+        font-size:.6rem;
+        font-weight:700;
+        font-style:${isPlan?'italic':'normal'};
+        color:${c};
+        background:${c}15;
+        border-left:2.5px solid ${c};
+        border-radius:0 3px 3px 0;
+        padding:.12rem .3rem;
+        margin-top:.18rem;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        max-width:100%;
+        line-height:1.4"
+        title="${e.cons} — ${e.tipo} (${e.status})">${nome}</div>`;
     }).join('');
 
-    const rnDot = hasRN ? `<span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:#1d9e7566;margin:.5px"></span>` : '';
+    const maisEvts = dayEvs.length > 3
+      ? `<div style="font-size:.52rem;color:var(--mu);margin-top:.1rem;padding-left:.2rem">+${dayEvs.length-3} mais</div>`
+      : '';
 
-    out += `<div onclick="calDayClick(${d})" style="background:${bg};border:1px solid ${bc};border-radius:5px;padding:.3rem .25rem;min-height:50px;cursor:${dayEvs.length?'pointer':'default'};transition:border-color .15s"
-      title="${dayEvs.map(e=>e.cons+' — '+e.tipo+(e.val?' R$'+e.val:'')).join('\n')}">
-      <div style="font-weight:700;color:${fds?'var(--mu)':'var(--wh)'};font-size:.7rem">${d}</div>
-      <div style="margin-top:.2rem">${dots}${rnDot}</div>
-      ${dayEvs.length > 3 ? `<div style="font-size:.55rem;color:var(--mu)">+${dayEvs.length-3}</div>` : ''}
+    out += `<div onclick="calDayClick(${d})"
+      style="background:${bg};border:1px solid ${bc};border-radius:5px;padding:.3rem .3rem;min-height:65px;cursor:${dayEvs.length?'pointer':'default'};transition:border-color .15s;overflow:hidden"
+      title="${dayEvs.map(e=>e.cons+' — '+e.tipo+' ('+e.status+')').join('\n')}">
+      <div style="font-weight:700;color:${fds?'var(--mu)':'var(--wh)'};font-size:.7rem;margin-bottom:.1rem">${d}</div>
+      ${eventPills}${maisEvts}
     </div>`;
   }
   cal.innerHTML = out;
 
-  // Event list for the month
+  // Lista de eventos do mês — Planejado em itálico, Pago normal — ambos negrito
   if(evts.length){
-    const sorted = [...evts].sort((a,b)=>(a.data||'').localeCompare(b.data||''));
-    list.innerHTML = `<div style="font-size:.72rem;font-weight:700;color:var(--mu);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em">
-      Eventos do mês (${evts.length})</div>` +
+    const sorted = [...evts].sort((a,b)=>(a.data||'zzz').localeCompare(b.data||'zzz'));
+    const total  = evts.length;
+    const pagos  = evts.filter(e=>e.status==='Pago').length;
+    const plan   = total - pagos;
+
+    list.innerHTML =
+      `<div style="display:flex;gap:1rem;font-size:.7rem;color:var(--mu);margin-bottom:.6rem;flex-wrap:wrap">
+        <span>Total: <b style="color:var(--wh)">${total}</b></span>
+        <span>✅ Pago: <b style="color:#1d9e75">${pagos}</b></span>
+        <span>📅 Planejado: <b style="color:#185fa5">${plan}</b></span>
+      </div>` +
       sorted.map(e=>{
-        const c   = CAL_CORES[e.tipo] || '#8890b0';
-        const dia = e.data ? parseInt(e.data.split('-')[2])+'/' + String(_calMes+1).padStart(2,'0') : 'sem data';
-        return `<div style="display:flex;align-items:center;gap:.6rem;padding:.4rem .6rem;background:var(--sf2);border-left:3px solid ${c};border-radius:0 5px 5px 0;margin-bottom:.3rem">
-          <span style="font-size:.7rem;color:var(--mu);min-width:35px">${dia}</span>
-          <span style="flex:1;font-size:.78rem;color:var(--wh);font-weight:600">${e.cons}</span>
-          <span style="font-size:.7rem;padding:.1rem .4rem;background:${c}22;color:${c};border:1px solid ${c}44;border-radius:10px">${e.tipo}</span>
-          <span style="font-size:.72rem;color:var(--ac);font-weight:600">${f2(e.val)}</span>
+        const c      = CAL_CORES[e.tipo] || '#8890b0';
+        const isPlan = e.status === 'Planejado';
+        const dia    = e.data && e.data.startsWith(mesPrefix)
+          ? parseInt(e.data.split('-')[2])+'/'+String(_calMes+1).padStart(2,'0')
+          : 'sem data';
+        // Planejado = itálico + negrito | Pago = normal + negrito
+        const nameStyle = isPlan
+          ? 'font-weight:700;font-style:italic;color:#93c5fd'
+          : 'font-weight:700;font-style:normal;color:var(--wh)';
+        const statusBadge = isPlan
+          ? `<span style="font-size:.62rem;color:#185fa5;border:1px solid #185fa544;border-radius:8px;padding:.1rem .35rem;font-style:italic">Planejado</span>`
+          : `<span style="font-size:.62rem;color:#1d9e75;border:1px solid #1d9e7544;border-radius:8px;padding:.1rem .35rem">Pago</span>`;
+        return `<div style="display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;background:var(--sf2);border-left:3px solid ${isPlan?'#185fa5':c};border-radius:0 5px 5px 0;margin-bottom:.3rem;opacity:${isPlan?'.85':'1'}">
+          <span style="font-size:.68rem;color:var(--mu);min-width:38px">${dia}</span>
+          <span style="flex:1;font-size:.78rem;${nameStyle}">${e.cons}</span>
+          <span style="font-size:.68rem;padding:.1rem .4rem;background:${c}22;color:${c};border:1px solid ${c}44;border-radius:10px">${e.tipo}</span>
+          ${statusBadge}
+          <span style="font-size:.7rem;color:var(--ac);font-weight:600">${f2(e.val)}</span>
         </div>`;
       }).join('');
   } else {
     list.innerHTML = `<div style="text-align:center;color:var(--mu);font-size:.78rem;padding:1rem">
-      Nenhum evento planejado para ${MESES_NOME[_calMes]}.<br>
-      <span style="font-size:.68rem">Lançamentos de Eventos e Apoios com data aparecem aqui.</span>
+      Nenhum evento para ${MESES_NOME[_calMes]}.<br>
+      <span style="font-size:.68rem">Navegue para o mês dos seus lançamentos.</span>
     </div>`;
   }
 }
@@ -1414,8 +1482,10 @@ function onEvTipo(){
   if(isSpeakerCB) ta.value = '';
 
   // Prestador — só Apoio Prestador
-  pr.disabled = !isPrest; pr.style.opacity = isPrest?'':'0.35'; pr.style.cursor = isPrest?'':'not-allowed';
-  if(!isPrest) pr.value = '';
+  // Prestador — habilitado para Speaker, Coffee Break e Apoio Prestador
+  const prEnabled = isSpeakerCB || isPrest;
+  pr.disabled = !prEnabled; pr.style.opacity = prEnabled?'':'0.35'; pr.style.cursor = prEnabled?'':'not-allowed';
+  if(!prEnabled) pr.value = '';
 
   // HCPs — Speaker Meetings ou Coffee Break
   hc.disabled = !isHcp; hc.style.opacity = isHcp?'':'0.35'; hc.style.cursor = isHcp?'':'not-allowed';
@@ -1425,9 +1495,8 @@ function onEvTipo(){
   pa.disabled = !isSpeaker; pa.style.opacity = isSpeaker?'':'0.35'; pa.style.cursor = isSpeaker?'':'not-allowed';
   if(!isSpeaker) pa.value = '';
 
-  // Médico — desabilitar para Speaker e Coffee Break
-  md.disabled = isSpeakerCB; md.style.opacity = isSpeakerCB?'0.35':''; md.style.cursor = isSpeakerCB?'not-allowed':'';
-  if(isSpeakerCB) md.value = '';
+  // Médico — HABILITADO para Speaker e Coffee Break (solicitado)
+  md.disabled = false; md.style.opacity = ''; md.style.cursor = '';
 
   // Sociedade — Apoio Sociedade
   so.disabled = !isSoc; so.style.opacity = isSoc?'':'0.35';
@@ -1603,12 +1672,14 @@ function addLanc(){
 }
 
 // ── EDIT MODAL ────────────────────────────────────────────────────────────────
-let _editSource = null; // 'hist' or 'sess'
-let _editIdx    = -1;
+let _editSource  = null;
+let _editIdx     = -1;
+let _editOldItem = null;
 
 function openEditModal(source, idx){
-  _editSource = source;
-  _editIdx    = idx;
+  _editSource  = source;
+  _editIdx     = idx;
+  _editOldItem = source==='hist' ? HIST[idx] : D.sess[idx];
   const l = source === 'hist' ? HIST[idx] : D.sess[idx];
   const s = (id,v) => { const el=document.getElementById('em-'+id); if(el) el.value=v||''; };
   s('ger',l.ger); s('cons',l.cons); s('ind',l.ind); s('fra',l.fra);
@@ -1621,28 +1692,38 @@ function openEditModal(source, idx){
 }
 function closeEditModal(){
   document.getElementById('editModal').style.display='none';
-  _editSource=null; _editIdx=-1;
+  _editSource=null; _editIdx=-1; _editOldItem=null;
 }
 function saveEdit(){
-  if(_editIdx<0) return;
+  if(_editIdx<0 || !_editOldItem) return;
   const g = id => document.getElementById('em-'+id).value;
   const updated = {
     ger:g('ger'),cons:g('cons'),ind:g('ind'),fra:g('fra'),
     tipo:g('tipo'),tipoAp:g('tap'),soc:g('soc'),verba:g('vrb'),
     medico:g('med'),status:g('sts'),mes:g('mes'),data:g('dat'),
-    val:parseFloat(g('val'))||0
+    val:parseFloat(g('val'))||0,
+    _id: _editOldItem._id||null,
+    id:  _editOldItem.id||null,
+    _tipo_origem: _editOldItem._tipo_origem||'evento'
   };
-  const existing = _editSource==='hist' ? HIST[_editIdx] : D.sess[_editIdx];
-  const existingId = existing._id || null;
-  updated._id = existingId;
-  // Para sessão: reverte totais antigos e aplica novos
-  if(_editSource==='sess'){
-    updateTotals(existing.fra, existing.cons, existing.mes, existing.val, existing.status, -1);
-    updateTotals(updated.fra,  updated.cons,  updated.mes,  updated.val,  updated.status,  +1);
+  // Reverte totais do item antigo
+  updateTotals(_editOldItem.fra, _editOldItem.cons, _editOldItem.mes, _editOldItem.val, _editOldItem.status, -1);
+  // Remove o item antigo da lista
+  if(_editSource==='hist') HIST.splice(_editIdx, 1);
+  else { const i = D.sess.indexOf(_editOldItem); if(i>=0) D.sess.splice(i,1); }
+  // Insere o item atualizado no mesmo índice
+  if(_editSource==='hist') HIST.splice(_editIdx, 0, updated);
+  else D.sess.splice(_editIdx, 0, updated);
+  // Aplica novos totais
+  updateTotals(updated.fra, updated.cons, updated.mes, updated.val, updated.status, +1);
+  // Envia para Sheets
+  const serverId = _editOldItem.id || _editOldItem._id;
+  if(serverId){
+    apiEdit(serverId, updated).then(()=>{
+      setBanner('✅ Edição salva no Google Sheets','#1d9e75');
+      setTimeout(()=>setBanner('',''),3000);
+    });
   }
-  if(_editSource==='hist') HIST[_editIdx]=updated;
-  else D.sess[_editIdx]=updated;
-  if(existingId) apiEdit(existingId, updated).then(()=>setBanner('✅ Edição salva no Google Sheets','#1d9e75'));
   closeEditModal(); renderLanc(); buildAll();
 }
 
@@ -2021,9 +2102,11 @@ async function loadFromSheets(silent=false){
         let dataStr = String(l.data||'').trim();
         // If date came as DD/MM/YYYY convert to YYYY-MM-DD
         if(dataStr.match(/^\d{2}\/\d{2}\/\d{4}$/)){
-          const [d,m,y] = dataStr.split('/');
-          dataStr = y+'-'+m+'-'+d;
+          const [dd,mm,yy] = dataStr.split('/');
+          dataStr = yy+'-'+mm+'-'+dd;
         }
+        // Remove time part if present (e.g. "2026-04-15 00:00:00")
+        if(dataStr.length > 10 && dataStr[10] === ' ') dataStr = dataStr.substring(0,10);
         return {...l, val: parseFloat(l.val)||0, data: dataStr, id: String(l.id||'')};
       });
     // Aplica totais novos
@@ -2493,6 +2576,44 @@ function renderViagemCal(){
   }
 
   grid.innerHTML = out;
+  renderViagemResumo();
+}
+
+function renderViagemResumo(){
+  const tb = document.getElementById('vg-resumo-body');
+  if(!tb) return;
+  if(!VIAGENS.length){
+    tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--mu);padding:1rem">Nenhuma viagem registrada.</td></tr>';
+    return;
+  }
+  const MESES_V2 = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+    'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const fmt = d => d ? d.split('-').reverse().join('/') : '—';
+  const getMes = ida => {
+    if(!ida) return '—';
+    const m = parseInt(ida.split('-')[1])-1;
+    return MESES_V2[m] || '—';
+  };
+  // Sort by IDA date
+  const sorted = [...VIAGENS].sort((a,b)=>(a.ida||'').localeCompare(b.ida||''));
+  const CONS_C2 = {
+    'Angélica Silva':'#1d9e75','Elaíne Azevedo':'#185fa5','Tassia Novais':'#f59e0b',
+    'Silvia Cunha':'#ef4444','Greice Morais':'#a855f7','Caroline Pereira':'#ec4899',
+    'Vagner Elias':'#0891b2','Eduardo Reis':'#f97316','Eduardo de Deus':'#84cc16',
+    'Rafaela Correa':'#6366f1','Dayane Olivieri':'#14b8a6'
+  };
+  tb.innerHTML = sorted.map(v => {
+    const c = CONS_C2[v.cons] || '#8890b0';
+    return `<tr>
+      <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${c};margin-right:.4rem"></span><b>${v.cons}</b></td>
+      <td style="color:var(--mu)">${v.cidade||v.uf||'—'}</td>
+      <td style="white-space:nowrap">${fmt(v.ida)}</td>
+      <td style="white-space:nowrap">${fmt(v.ret)}</td>
+      <td style="text-align:center;font-weight:700;color:var(--ac)">${v.dias||'—'}</td>
+      <td>${getMes(v.ida)}</td>
+      <td style="font-size:.72rem;color:var(--mu)">${v.tipo||v.ausencia||'—'}</td>
+    </tr>`;
+  }).join('');
 }
 
 function vgDayDetail(d){var ano=_vgCalAno,mes=_vgCalMes;var pad=function(n){return String(n).padStart(2,'0');};var dateStr=ano+'-'+pad(mes+1)+'-'+pad(d);var viagens=VIAGENS.filter(function(v){return v.ida<=dateStr&&v.ret>=dateStr;});if(!viagens.length)return;var fmtD=function(s){return s?s.split('-').reverse().join('/'):'--';};var info=viagens.map(function(v){return '- '+v.cons+'\n  Gerente: '+v.ger+' | IDA: '+fmtD(v.ida)+' | Retorno: '+fmtD(v.ret)+' | '+v.dias+' dia(s)'+(v.cidade?' | '+v.uf+' - '+v.cidade:'| '+v.uf)+(v.obs?' | Obs: '+v.obs:'');}).join('\n\n');alert('Viagens em '+pad(d)+'/'+pad(mes+1)+'/'+ano+':\n\n'+info);}
