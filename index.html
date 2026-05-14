@@ -1253,7 +1253,9 @@ function consDonutsFranquia(){
   const container = document.getElementById('cPainel');
   if(!container) return;
 
-  const TIPOS = ['Speaker Meetings','Coffee Break','Apoio Sociedade','Apoio Prestador','Almoço','Jantar','Café'];
+  // Regra: Almoço, Jantar e Café são tratados como RN no painel
+  const RN_TIPOS = ['Almoço','Jantar','Café','Refeição de Negócios (RN)'];
+  const TIPOS = ['Speaker Meetings','Coffee Break','Apoio Sociedade','Apoio Prestador','Refeição de Negócios (RN)'];
   const FRANQUIAS = ['Resp','Derma','Rhyno','Gastro'];
   const FR_COLORS  = { Resp:'#185fa5', Derma:'#1d9e75', Rhyno:'#a855f7', Gastro:'#f59e0b' };
   const CONS_LIST  = ['Angélica Silva','Elaíne Azevedo','Tassia Novais','Silvia Cunha','Greice Morais',
@@ -1270,8 +1272,10 @@ function consDonutsFranquia(){
   };
   const TIPO_COLORS = {
     'Speaker Meetings':'#185fa5','Coffee Break':'#c62828','Apoio Sociedade':'#f59e0b',
-    'Apoio Prestador':'#f97316','Almoço':'#1d9e75','Jantar':'#0891b2','Café':'#a855f7'
+    'Apoio Prestador':'#f97316','Refeição de Negócios (RN)':'#1d9e75'
   };
+  // Função para normalizar tipo — agrupa RN
+  const normTipo = t => RN_TIPOS.includes(t) ? 'Refeição de Negócios (RN)' : t;
 
   // Build counts
   const frCount = {}, consCount = {}, frTipoCount = {};
@@ -1279,10 +1283,11 @@ function consDonutsFranquia(){
   CONS_LIST.forEach(c=>{ consCount[c]={total:0,pago:0,plan:0}; });
 
   allLancs().forEach(l=>{
+    const tipo = normTipo(l.tipo);
     if(frCount[l.fra]){
       if(l.status==='Pago'){frCount[l.fra].pago++;}
       else if(l.status==='Planejado'){frCount[l.fra].plan++;}
-      if(frTipoCount[l.fra][l.tipo]!==undefined) frTipoCount[l.fra][l.tipo]++;
+      if(frTipoCount[l.fra][tipo]!==undefined) frTipoCount[l.fra][tipo]++;
     }
     if(consCount[l.cons]!==undefined){
       consCount[l.cons].total++;
