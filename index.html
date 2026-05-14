@@ -214,8 +214,8 @@ footer strong{color:var(--ac)}
   <!-- Gráfico 2: Dispersão 3D - Investimento por Consultor -->
   <div class="stit">Tipos de Investimento por Franquia</div>
   <div class="cc" style="margin-bottom:1rem">
-    <div class="ct">Waffle chart — cada quadrado = 1 lançamento · Pago (sólido) · Planejado (claro) · cor = tipo</div>
-    <div id="cWaffle" style="margin-top:.8rem"></div>
+    <div class="ct">Painel de resumo — total por franquia com barra de progresso + ranking de consultores</div>
+    <div id="cPainel" style="margin-top:.8rem"></div>
   </div>
 
   <div class="stit">Investimento por Consultor vs Verba da Franquia</div>
@@ -1248,129 +1248,135 @@ function orcForm(){
     <div style="grid-column:1/-1;font-size:.67rem;color:var(--mu);margin-top:.2rem">&#128274; Edição apenas pelo Gerente Regional</div>`;
 }
 
-// ── WAFFLE CHART — Tipos de Investimento por Franquia ───────────────────────
+// ── PAINEL RESUMO — Franquia + Ranking Consultor ─────────────────────────────
 function consDonutsFranquia(){
-  const container = document.getElementById('cWaffle');
+  const container = document.getElementById('cPainel');
   if(!container) return;
 
   const TIPOS = ['Speaker Meetings','Coffee Break','Apoio Sociedade','Apoio Prestador','Almoço','Jantar','Café'];
   const FRANQUIAS = ['Resp','Derma','Rhyno','Gastro'];
   const FR_COLORS  = { Resp:'#185fa5', Derma:'#1d9e75', Rhyno:'#a855f7', Gastro:'#f59e0b' };
+  const CONS_LIST  = ['Angélica Silva','Elaíne Azevedo','Tassia Novais','Silvia Cunha','Greice Morais',
+                      'Caroline Pereira','Vagner Elias','Eduardo Reis','Eduardo de Deus','Rafaela Correa','Dayane Olivieri','Regional'];
+  const CONS_SHORT = {'Angélica Silva':'Angélica','Elaíne Azevedo':'Elaíne','Tassia Novais':'Tassia',
+                      'Silvia Cunha':'Silvia','Greice Morais':'Greice','Caroline Pereira':'Caroline',
+                      'Vagner Elias':'Vagner','Eduardo Reis':'Edu Reis','Eduardo de Deus':'Edu Deus',
+                      'Rafaela Correa':'Rafaela','Dayane Olivieri':'Dayane','Regional':'Regional'};
+  const CONS_COLORS = {
+    'Angélica Silva':'#1d9e75','Elaíne Azevedo':'#185fa5','Tassia Novais':'#f59e0b',
+    'Silvia Cunha':'#ef4444','Greice Morais':'#a855f7','Caroline Pereira':'#ec4899',
+    'Vagner Elias':'#0891b2','Eduardo Reis':'#f97316','Eduardo de Deus':'#84cc16',
+    'Rafaela Correa':'#6366f1','Dayane Olivieri':'#14b8a6','Regional':'#8890b0'
+  };
   const TIPO_COLORS = {
-    'Speaker Meetings':'#185fa5','Coffee Break':'#c62828',
-    'Apoio Sociedade':'#f59e0b','Apoio Prestador':'#f97316',
-    'Almoço':'#1d9e75','Jantar':'#0891b2','Café':'#a855f7'
+    'Speaker Meetings':'#185fa5','Coffee Break':'#c62828','Apoio Sociedade':'#f59e0b',
+    'Apoio Prestador':'#f97316','Almoço':'#1d9e75','Jantar':'#0891b2','Café':'#a855f7'
   };
 
-  // Count pago and planejado per tipo per franquia
-  const counts = {};
-  FRANQUIAS.forEach(f=>{ counts[f]={}; TIPOS.forEach(t=>{ counts[f][t]={pago:0,plan:0}; }); });
+  // Build counts
+  const frCount = {}, consCount = {}, frTipoCount = {};
+  FRANQUIAS.forEach(f=>{ frCount[f]={pago:0,plan:0}; frTipoCount[f]={}; TIPOS.forEach(t=>frTipoCount[f][t]=0); });
+  CONS_LIST.forEach(c=>{ consCount[c]={total:0,pago:0,plan:0}; });
+
   allLancs().forEach(l=>{
-    if(counts[l.fra] && counts[l.fra][l.tipo]){
-      if(l.status==='Pago') counts[l.fra][l.tipo].pago++;
-      else if(l.status==='Planejado') counts[l.fra][l.tipo].plan++;
+    if(frCount[l.fra]){
+      if(l.status==='Pago'){frCount[l.fra].pago++;}
+      else if(l.status==='Planejado'){frCount[l.fra].plan++;}
+      if(frTipoCount[l.fra][l.tipo]!==undefined) frTipoCount[l.fra][l.tipo]++;
+    }
+    if(consCount[l.cons]!==undefined){
+      consCount[l.cons].total++;
+      if(l.status==='Pago') consCount[l.cons].pago++;
+      else if(l.status==='Planejado') consCount[l.cons].plan++;
     }
   });
 
-  const COLS = 10;
-  let out = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.2rem">';
+  const totalRegional = FRANQUIAS.reduce((s,f)=>s+frCount[f].pago+frCount[f].plan,0);
+  const maxFr = Math.max(...FRANQUIAS.map(f=>frCount[f].pago+frCount[f].plan),1);
 
-  FRANQUIAS.forEach(fra=>{
-    const frColor = FR_COLORS[fra];
-    // Build ordered squares: fill by tipo
-    const squares = [];
-    TIPOS.forEach(tipo=>{
-      const c = counts[fra][tipo];
-      const tColor = TIPO_COLORS[tipo];
-      for(let i=0;i<c.pago;i++) squares.push({color:tColor, tipo, status:'Pago', opacity:1});
-      for(let i=0;i<c.plan;i++) squares.push({color:tColor, tipo, status:'Planejado', opacity:0.3});
-    });
-    const total = squares.length;
-    // Pad to multiple of COLS
-    const rows = Math.ceil(total/COLS) || 1;
-    while(squares.length < rows*COLS) squares.push(null);
+  let out = '';
 
-    out += '<div style="background:var(--sf2);border:1px solid '+frColor+'44;border-radius:10px;padding:.8rem">';
-    // Header
-    out += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">';
-    out += '<span style="font-size:.78rem;font-weight:700;color:'+frColor+'">'+fra+'</span>';
-    out += '<span style="font-size:.72rem;color:var(--mu)">'+total+' lançamentos</span>';
-    out += '</div>';
-    // Grid
-    out += '<div style="display:grid;grid-template-columns:repeat('+COLS+',1fr);gap:2px">';
-    squares.forEach(sq=>{
-      if(!sq){
-        out += '<div style="aspect-ratio:1;border-radius:2px;background:transparent"></div>';
-      } else {
-        out += '<div style="aspect-ratio:1;border-radius:2px;background:'+sq.color+';opacity:'+sq.opacity+'" title="'+sq.tipo+' — '+sq.status+'"></div>';
-      }
-    });
-    out += '</div>';
-
-    // Mini legend for this franquia
-    const tiposUsed = TIPOS.filter(t=> counts[fra][t].pago+counts[fra][t].plan > 0);
-    if(tiposUsed.length){
-      out += '<div style="display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:.5rem">';
-      tiposUsed.forEach(t=>{
-        const tc = TIPO_COLORS[t];
-        const n  = counts[fra][t].pago + counts[fra][t].plan;
-        const label = t.length > 12 ? t.substring(0,11)+'…' : t;
-        out += '<span style="display:flex;align-items:center;gap:3px;font-size:.6rem;color:var(--mu)">';
-        out += '<span style="width:7px;height:7px;border-radius:1px;background:'+tc+';display:inline-block"></span>';
-        out += label+' <b style="color:var(--wh)">'+n+'</b></span>';
-      });
-      out += '</div>';
-    }
-    out += '</div>';
-  });
-
-  out += '</div>';
-
-  // ── TOTAL REGIONAL waffle ───────────────────────────────────────────────────
-  const totalSquares = [];
-  TIPOS.forEach(tipo=>{
-    const tColor = TIPO_COLORS[tipo];
-    let pago=0, plan=0;
-    FRANQUIAS.forEach(fra=>{ pago+=counts[fra][tipo].pago; plan+=counts[fra][tipo].plan; });
-    for(let i=0;i<pago;i++) totalSquares.push({color:tColor, tipo, status:'Pago', opacity:1});
-    for(let i=0;i<plan;i++) totalSquares.push({color:tColor, tipo, status:'Planejado', opacity:0.3});
-  });
-  const totalGeral = totalSquares.length;
-  const totalCOLS  = 15;
-  const totalRows  = Math.ceil(totalGeral/totalCOLS) || 1;
-  while(totalSquares.length < totalRows*totalCOLS) totalSquares.push(null);
-
-  out += '<div style="background:var(--sf2);border:1px solid var(--ac)44;border-radius:10px;padding:.8rem;margin-top:.4rem">';
-  out += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">';
-  out += '<span style="font-size:.78rem;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:.05em">Total Regional</span>';
-  out += '<span style="font-size:.72rem;color:var(--mu)">'+totalGeral+' lançamentos</span>';
-  out += '</div>';
-  out += '<div style="display:grid;grid-template-columns:repeat('+totalCOLS+',1fr);gap:2px">';
-  totalSquares.forEach(sq=>{
-    if(!sq){
-      out += '<div style="aspect-ratio:1;border-radius:2px;background:transparent"></div>';
-    } else {
-      out += '<div style="aspect-ratio:1;border-radius:2px;background:'+sq.color+';opacity:'+sq.opacity+'" title="'+sq.tipo+' — '+sq.status+'"></div>';
-    }
-  });
-  out += '</div>';
-  // Mini legenda total
-  out += '<div style="display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:.5rem">';
-  TIPOS.forEach(t=>{
-    const tc = TIPO_COLORS[t];
-    const n  = FRANQUIAS.reduce((s,f)=>s+counts[f][t].pago+counts[f][t].plan, 0);
-    if(n===0) return;
-    const label = t.length > 14 ? t.substring(0,13)+'…' : t;
-    out += '<span style="display:flex;align-items:center;gap:3px;font-size:.62rem;color:var(--mu)">';
-    out += '<span style="width:7px;height:7px;border-radius:1px;background:'+tc+';display:inline-block"></span>';
-    out += label+' <b style="color:var(--wh)">'+n+'</b></span>';
-  });
+  // ── TOTAL REGIONAL KPI ────────────────────────────────────────────────────
+  out += '<div style="background:var(--ac)11;border:1px solid var(--ac)33;border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">';
+  out += '<div><div style="font-size:.65rem;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:.08em">Total Regional</div>';
+  out += '<div style="font-size:2rem;font-weight:700;color:var(--wh);line-height:1.1">'+totalRegional+'</div>';
+  out += '<div style="font-size:.7rem;color:var(--mu)">lançamentos (Pago + Planejado)</div></div>';
+  const pagosTotal = FRANQUIAS.reduce((s,f)=>s+frCount[f].pago,0);
+  const planTotal  = FRANQUIAS.reduce((s,f)=>s+frCount[f].plan,0);
+  out += '<div style="display:flex;gap:1.2rem">';
+  out += '<div style="text-align:center"><div style="font-size:1.2rem;font-weight:700;color:#1d9e75">'+pagosTotal+'</div><div style="font-size:.65rem;color:var(--mu)">Pago</div></div>';
+  out += '<div style="text-align:center"><div style="font-size:1.2rem;font-weight:700;color:#185fa5">'+planTotal+'</div><div style="font-size:.65rem;color:var(--mu)">Planejado</div></div>';
   out += '</div></div>';
 
-  // Global legend pago vs planejado
-  out += '<div style="display:flex;gap:1.2rem;margin-top:.8rem;padding-top:.6rem;border-top:1px solid var(--bd)">';
-  out += '<span style="display:flex;align-items:center;gap:.4rem;font-size:.7rem;color:var(--mu)"><span style="width:10px;height:10px;border-radius:2px;background:var(--wh);display:inline-block"></span>Pago (sólido)</span>';
-  out += '<span style="display:flex;align-items:center;gap:.4rem;font-size:.7rem;color:var(--mu)"><span style="width:10px;height:10px;border-radius:2px;background:var(--mu);opacity:.4;display:inline-block"></span>Planejado (claro)</span>';
+  // ── FRANQUIAS — cards com gauge + tipos ───────────────────────────────────
+  out += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-bottom:1rem">';
+  FRANQUIAS.forEach(fra=>{
+    const c   = FR_COLORS[fra];
+    const tot = frCount[fra].pago + frCount[fra].plan;
+    const pct = Math.round(tot/maxFr*100);
+    const pPct= tot ? Math.round(frCount[fra].pago/tot*100) : 0;
+
+    // Top tipos for this franquia
+    const topTipos = TIPOS.map(t=>({t, n:frTipoCount[fra][t]}))
+      .filter(x=>x.n>0).sort((a,b)=>b.n-a.n).slice(0,3);
+
+    out += '<div style="background:var(--sf2);border:1px solid '+c+'44;border-radius:10px;padding:.75rem">';
+    // Header
+    out += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem">';
+    out += '<div><div style="font-size:.8rem;font-weight:700;color:'+c+'">'+fra+'</div>';
+    out += '<div style="font-size:1.4rem;font-weight:700;color:var(--wh);line-height:1.1">'+tot+'</div></div>';
+    // Pago/Plan pills
+    out += '<div style="display:flex;flex-direction:column;gap:2px;align-items:flex-end">';
+    out += '<span style="font-size:.6rem;background:#1d9e7522;color:#1d9e75;border-radius:8px;padding:.1rem .4rem">'+frCount[fra].pago+' pago</span>';
+    out += '<span style="font-size:.6rem;background:#185fa522;color:#185fa5;border-radius:8px;padding:.1rem .4rem">'+frCount[fra].plan+' plan.</span>';
+    out += '</div></div>';
+    // Progress bar dupla
+    out += '<div style="height:6px;background:var(--sf);border-radius:3px;margin-bottom:.5rem;overflow:hidden;position:relative">';
+    out += '<div style="position:absolute;left:0;top:0;height:100%;width:'+pct+'%;background:'+c+'33;border-radius:3px"></div>';
+    out += '<div style="position:absolute;left:0;top:0;height:100%;width:'+Math.round(frCount[fra].pago/maxFr*100)+'%;background:'+c+';border-radius:3px"></div>';
+    out += '</div>';
+    // Top tipos
+    topTipos.forEach(({t,n})=>{
+      const tc = TIPO_COLORS[t]||'#8890b0';
+      const lb = t.length>16?t.substring(0,15)+'…':t;
+      const tp = Math.round(n/tot*100);
+      out += '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.2rem">';
+      out += '<span style="width:6px;height:6px;border-radius:1px;background:'+tc+';flex-shrink:0"></span>';
+      out += '<span style="font-size:.62rem;color:var(--mu);flex:1">'+lb+'</span>';
+      out += '<span style="font-size:.62rem;font-weight:700;color:var(--wh)">'+n+'</span>';
+      out += '<span style="font-size:.58rem;color:var(--mu)">'+tp+'%</span>';
+      out += '</div>';
+    });
+    out += '</div>';
+  });
+  out += '</div>';
+
+  // ── RANKING CONSULTORES ───────────────────────────────────────────────────
+  out += '<div style="background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:.75rem">';
+  out += '<div style="font-size:.72rem;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">Ranking por Consultor</div>';
+
+  const ranking = CONS_LIST
+    .map(c=>({c, ...consCount[c]}))
+    .filter(x=>x.total>0)
+    .sort((a,b)=>b.total-a.total);
+  const maxCons = ranking[0]?.total || 1;
+
+  ranking.forEach((item,i)=>{
+    const cc  = CONS_COLORS[item.c]||'#8890b0';
+    const pct = Math.round(item.total/maxCons*100);
+    const pPct= Math.round(item.pago/item.total*100);
+    out += '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem">';
+    out += '<span style="font-size:.62rem;color:var(--mu);width:14px;text-align:right">'+(i+1)+'</span>';
+    out += '<span style="width:6px;height:6px;border-radius:50%;background:'+cc+';flex-shrink:0"></span>';
+    out += '<span style="font-size:.72rem;color:var(--wh);font-weight:600;width:72px;flex-shrink:0">'+CONS_SHORT[item.c]+'</span>';
+    out += '<div style="flex:1;height:10px;background:var(--sf);border-radius:5px;overflow:hidden;position:relative">';
+    out += '<div style="position:absolute;left:0;top:0;height:100%;width:'+pct+'%;background:'+cc+'33;border-radius:5px"></div>';
+    out += '<div style="position:absolute;left:0;top:0;height:100%;width:'+Math.round(item.pago/maxCons*100)+'%;background:'+cc+';border-radius:5px"></div>';
+    out += '</div>';
+    out += '<span style="font-size:.72rem;font-weight:700;color:var(--wh);width:22px;text-align:right">'+item.total+'</span>';
+    out += '<span style="font-size:.6rem;color:#1d9e75;width:30px;text-align:right">'+pPct+'%P</span>';
+    out += '</div>';
+  });
   out += '</div>';
 
   container.innerHTML = out;
