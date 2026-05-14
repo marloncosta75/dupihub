@@ -212,6 +212,12 @@ footer strong{color:var(--ac)}
   </div>
 
   <!-- Gráfico 2: Dispersão 3D - Investimento por Consultor -->
+  <div class="stit">Tipos de Investimento por Franquia</div>
+  <div class="cc" style="margin-bottom:1rem">
+    <div class="ct">Radar — quantidade de lançamentos por tipo e franquia (Pago + Planejado)</div>
+    <div style="height:340px"><canvas id="cRadar"></canvas></div>
+  </div>
+
   <div class="stit">Investimento por Consultor vs Verba da Franquia</div>
   <div class="cc" style="margin-bottom:1rem">
     <div class="ct">Dispersão — tamanho da bola proporcional ao investimento (Pago + Planejado)</div>
@@ -1022,6 +1028,7 @@ function buildAll(){
   try{ line(); }catch(e){}
   try{ thermo(); }catch(e){}
   try{ consChart(); }catch(e){}
+  try{ consRadar(); }catch(e){}
   try{ consBubble(); }catch(e){}
   try{ burnRate(); }catch(e){}
   try{ consTable(); }catch(e){}
@@ -1239,6 +1246,62 @@ function orcForm(){
       <button class="btn btn2" onclick="lockBudget()">&#128274; Bloquear</button>
     </div>
     <div style="grid-column:1/-1;font-size:.67rem;color:var(--mu);margin-top:.2rem">&#128274; Edição apenas pelo Gerente Regional</div>`;
+}
+
+// ── GRÁFICO RADAR — Tipos de Investimento por Franquia ───────────────────────
+function consRadar(){
+  const TIPOS = ['Speaker Meetings','Coffee Break','Apoio Sociedade','Apoio Prestador','Almoço','Jantar','Café'];
+  const FRANQUIAS = ['Resp','Derma','Rhyno','Gastro'];
+  const FR_COLORS = {
+    'Resp':   { border:'#185fa5', bg:'#185fa522' },
+    'Derma':  { border:'#1d9e75', bg:'#1d9e7522' },
+    'Rhyno':  { border:'#a855f7', bg:'#a855f722' },
+    'Gastro': { border:'#f59e0b', bg:'#f59e0b22' },
+  };
+
+  // Count per franquia per tipo
+  const counts = {};
+  FRANQUIAS.forEach(f=>{ counts[f] = {}; TIPOS.forEach(t=>{ counts[f][t]=0; }); });
+  allLancs().forEach(l=>{
+    if(counts[l.fra] && counts[l.fra][l.tipo] !== undefined){
+      counts[l.fra][l.tipo]++;
+    }
+  });
+
+  const datasets = FRANQUIAS.map(f=>({
+    label: f,
+    data: TIPOS.map(t=> counts[f][t]),
+    borderColor: FR_COLORS[f].border,
+    backgroundColor: FR_COLORS[f].bg,
+    borderWidth: 2,
+    pointBackgroundColor: FR_COLORS[f].border,
+    pointBorderColor: '#1a1d27',
+    pointRadius: 4,
+    pointHoverRadius: 6,
+  }));
+
+  mk('cRadar','radar',{
+    labels: TIPOS.map(t=> t.length > 14 ? t.substring(0,14)+'…' : t),
+    datasets
+  },{
+    scales:{
+      r:{
+        beginAtZero: true,
+        ticks:{ color:'#8890b0', font:{size:8}, stepSize:1, backdropColor:'transparent' },
+        grid:{ color:'#2d3154' },
+        angleLines:{ color:'#2d3154' },
+        pointLabels:{ color:'#8890b0', font:{size:9} }
+      }
+    },
+    plugins:{
+      legend:{ labels:{ color:'#8890b0', font:{size:9}, boxWidth:10 } },
+      tooltip:{
+        callbacks:{
+          label: ctx => `${ctx.dataset.label}: ${ctx.raw} lançamento(s)`
+        }
+      }
+    }
+  });
 }
 
 // ── GRÁFICO DISPERSÃO (BUBBLE) por Consultor ─────────────────────────────────
