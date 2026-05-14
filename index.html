@@ -214,8 +214,8 @@ footer strong{color:var(--ac)}
   <!-- Gráfico 2: Dispersão 3D - Investimento por Consultor -->
   <div class="stit">Tipos de Investimento por Franquia</div>
   <div class="cc" style="margin-bottom:1rem">
-    <div class="ct">Radar — quantidade de lançamentos por tipo e franquia (Pago + Planejado)</div>
-    <div style="height:340px"><canvas id="cRadar"></canvas></div>
+    <div class="ct">Treemap — área proporcional ao número de lançamentos por tipo e franquia</div>
+    <div id="cTreemap" style="margin-top:.8rem;width:100%;min-height:320px"></div>
   </div>
 
   <div class="stit">Investimento por Consultor vs Verba da Franquia</div>
@@ -1028,7 +1028,7 @@ function buildAll(){
   try{ line(); }catch(e){}
   try{ thermo(); }catch(e){}
   try{ consChart(); }catch(e){}
-  try{ consRadar(); }catch(e){}
+  try{ consDonutsFranquia(); }catch(e){}
   try{ consBubble(); }catch(e){}
   try{ burnRate(); }catch(e){}
   try{ consTable(); }catch(e){}
@@ -1248,60 +1248,77 @@ function orcForm(){
     <div style="grid-column:1/-1;font-size:.67rem;color:var(--mu);margin-top:.2rem">&#128274; Edição apenas pelo Gerente Regional</div>`;
 }
 
-// ── GRÁFICO RADAR — Tipos de Investimento por Franquia ───────────────────────
-function consRadar(){
+// ── TREEMAP — Tipos de Investimento por Franquia ─────────────────────────────
+function consDonutsFranquia(){
+  const container = document.getElementById('cTreemap');
+  if(!container) return;
+
   const TIPOS = ['Speaker Meetings','Coffee Break','Apoio Sociedade','Apoio Prestador','Almoço','Jantar','Café'];
   const FRANQUIAS = ['Resp','Derma','Rhyno','Gastro'];
-  const FR_COLORS = {
-    'Resp':   { border:'#185fa5', bg:'#185fa522' },
-    'Derma':  { border:'#1d9e75', bg:'#1d9e7522' },
-    'Rhyno':  { border:'#a855f7', bg:'#a855f722' },
-    'Gastro': { border:'#f59e0b', bg:'#f59e0b22' },
-  };
+  const FR_COLORS = { Resp:'#185fa5', Derma:'#1d9e75', Rhyno:'#a855f7', Gastro:'#f59e0b' };
+  const FR_LIGHT  = { Resp:'#185fa522', Derma:'#1d9e7522', Rhyno:'#a855f722', Gastro:'#f59e0b22' };
 
-  // Count per franquia per tipo
-  const counts = {};
-  FRANQUIAS.forEach(f=>{ counts[f] = {}; TIPOS.forEach(t=>{ counts[f][t]=0; }); });
-  allLancs().forEach(l=>{
-    if(counts[l.fra] && counts[l.fra][l.tipo] !== undefined){
-      counts[l.fra][l.tipo]++;
-    }
+  // Count per tipo per franquia
+  const data = [];
+  TIPOS.forEach(tipo=>{
+    FRANQUIAS.forEach(fra=>{
+      const count = allLancs().filter(l=>l.tipo===tipo && l.fra===fra).length;
+      if(count > 0) data.push({ tipo, fra, count });
+    });
   });
 
-  const datasets = FRANQUIAS.map(f=>({
-    label: f,
-    data: TIPOS.map(t=> counts[f][t]),
-    borderColor: FR_COLORS[f].border,
-    backgroundColor: FR_COLORS[f].bg,
-    borderWidth: 2,
-    pointBackgroundColor: FR_COLORS[f].border,
-    pointBorderColor: '#1a1d27',
-    pointRadius: 4,
-    pointHoverRadius: 6,
-  }));
+  if(!data.length){
+    container.innerHTML = '<div style="text-align:center;color:var(--mu);padding:2rem;font-size:.8rem">Sem lançamentos para exibir.</div>';
+    return;
+  }
 
-  mk('cRadar','radar',{
-    labels: TIPOS.map(t=> t.length > 14 ? t.substring(0,14)+'…' : t),
-    datasets
-  },{
-    scales:{
-      r:{
-        beginAtZero: true,
-        ticks:{ color:'#8890b0', font:{size:8}, stepSize:1, backdropColor:'transparent' },
-        grid:{ color:'#2d3154' },
-        angleLines:{ color:'#2d3154' },
-        pointLabels:{ color:'#8890b0', font:{size:9} }
-      }
-    },
-    plugins:{
-      legend:{ labels:{ color:'#8890b0', font:{size:9}, boxWidth:10 } },
-      tooltip:{
-        callbacks:{
-          label: ctx => `${ctx.dataset.label}: ${ctx.raw} lançamento(s)`
-        }
-      }
-    }
+  const total = data.reduce((s,d)=>s+d.count, 0);
+  const W = container.offsetWidth || 600;
+  const H = 320;
+
+  // Simple squarified treemap — group by tipo first
+  const tipoTotals = {};
+  TIPOS.forEach(t=>{ tipoTotals[t] = data.filter(d=>d.tipo===t).reduce((s,d)=>s+d.count,0); });
+  const tiposSorted = Object.entries(tipoTotals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+
+  // Layout: horizontal strips per tipo, subdivided by franquia
+  let html2 = '<div style="display:flex;flex-direction:column;gap:2px;width:100%;height:'+H+'px">';
+  tiposSorted.forEach(([tipo, tipoTotal])=>{
+    const pct   = tipoTotal / total;
+    const hPx   = Math.max(Math.round(pct * H), 28);
+    const items = data.filter(d=>d.tipo===tipo).sort((a,b)=>b.count-a.count);
+    const label = tipo.length > 16 ? tipo.substring(0,15)+'…' : tipo;
+
+    html2 += '<div style="display:flex;gap:2px;height:'+hPx+'px;flex-shrink:0">';
+    // Tipo label cell
+    html2 += '<div style="width:100px;flex-shrink:0;background:#1a1d27;border:1px solid #2d3154;border-radius:4px;display:flex;flex-direction:column;justify-content:center;padding:0 .5rem">';
+    html2 += '<div style="font-size:.65rem;font-weight:700;color:#8890b0;text-transform:uppercase;letter-spacing:.06em">'+label+'</div>';
+    html2 += '<div style="font-size:.85rem;font-weight:700;color:var(--wh)">'+tipoTotal+'</div>';
+    html2 += '</div>';
+    // Franquia cells
+    html2 += '<div style="flex:1;display:flex;gap:2px">';
+    items.forEach(item=>{
+      const wPct = (item.count / tipoTotal * 100).toFixed(1);
+      const c    = FR_COLORS[item.fra];
+      const bg   = FR_LIGHT[item.fra];
+      html2 += '<div style="flex:'+item.count+';background:'+bg+';border:1px solid '+c+';border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:28px;overflow:hidden;cursor:default" title="'+item.fra+' — '+tipo+': '+item.count+' lançamentos">';
+      html2 += '<div style="font-size:.8rem;font-weight:700;color:'+c+'">'+item.count+'</div>';
+      if(hPx > 38) html2 += '<div style="font-size:.58rem;color:'+c+'88">'+item.fra+'</div>';
+      html2 += '</div>';
+    });
+    html2 += '</div></div>';
   });
+  html2 += '</div>';
+
+  // Legend
+  html2 += '<div style="display:flex;gap:.8rem;margin-top:.6rem;flex-wrap:wrap">';
+  FRANQUIAS.forEach(f=>{
+    html2 += '<span style="display:flex;align-items:center;gap:.3rem;font-size:.68rem;color:#8890b0">';
+    html2 += '<span style="width:9px;height:9px;border-radius:2px;background:'+FR_COLORS[f]+';display:inline-block"></span>'+f+'</span>';
+  });
+  html2 += '</div>';
+
+  container.innerHTML = html2;
 }
 
 // ── GRÁFICO DISPERSÃO (BUBBLE) por Consultor ─────────────────────────────────
