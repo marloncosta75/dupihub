@@ -214,8 +214,8 @@ footer strong{color:var(--ac)}
   <!-- Gráfico 2: Dispersão 3D - Investimento por Consultor -->
   <div class="stit">Tipos de Investimento por Franquia</div>
   <div class="cc" style="margin-bottom:1rem">
-    <div class="ct">Lollipop — quantidade de lançamentos por tipo · Pago (sólido) e Planejado (tracejado)</div>
-    <div id="cLollipop" style="margin-top:.8rem;width:100%;min-height:280px"></div>
+    <div class="ct">Waffle chart — cada quadrado = 1 lançamento · Pago (sólido) · Planejado (claro) · cor = tipo</div>
+    <div id="cWaffle" style="margin-top:.8rem"></div>
   </div>
 
   <div class="stit">Investimento por Consultor vs Verba da Franquia</div>
@@ -1248,106 +1248,129 @@ function orcForm(){
     <div style="grid-column:1/-1;font-size:.67rem;color:var(--mu);margin-top:.2rem">&#128274; Edição apenas pelo Gerente Regional</div>`;
 }
 
-// ── LOLLIPOP CHART — Tipos de Investimento por Tipo ─────────────────────────
+// ── WAFFLE CHART — Tipos de Investimento por Franquia ───────────────────────
 function consDonutsFranquia(){
-  const container = document.getElementById('cLollipop');
+  const container = document.getElementById('cWaffle');
   if(!container) return;
 
   const TIPOS = ['Speaker Meetings','Coffee Break','Apoio Sociedade','Apoio Prestador','Almoço','Jantar','Café'];
   const FRANQUIAS = ['Resp','Derma','Rhyno','Gastro'];
-  const FR_COLORS = { Resp:'#185fa5', Derma:'#1d9e75', Rhyno:'#a855f7', Gastro:'#f59e0b' };
+  const FR_COLORS  = { Resp:'#185fa5', Derma:'#1d9e75', Rhyno:'#a855f7', Gastro:'#f59e0b' };
+  const TIPO_COLORS = {
+    'Speaker Meetings':'#185fa5','Coffee Break':'#c62828',
+    'Apoio Sociedade':'#f59e0b','Apoio Prestador':'#f97316',
+    'Almoço':'#1d9e75','Jantar':'#0891b2','Café':'#a855f7'
+  };
 
-  // Count pago and planejado per tipo
-  const pago = {}, plan = {};
-  TIPOS.forEach(t=>{ pago[t]=0; plan[t]=0; });
+  // Count pago and planejado per tipo per franquia
+  const counts = {};
+  FRANQUIAS.forEach(f=>{ counts[f]={}; TIPOS.forEach(t=>{ counts[f][t]={pago:0,plan:0}; }); });
   allLancs().forEach(l=>{
-    if(pago[l.tipo]!==undefined){
-      if(l.status==='Pago') pago[l.tipo]++;
-      else if(l.status==='Planejado') plan[l.tipo]++;
+    if(counts[l.fra] && counts[l.fra][l.tipo]){
+      if(l.status==='Pago') counts[l.fra][l.tipo].pago++;
+      else if(l.status==='Planejado') counts[l.fra][l.tipo].plan++;
     }
   });
 
-  const maxVal = Math.max(...TIPOS.map(t=>pago[t]+plan[t]), 1);
-  const W = container.offsetWidth || 580;
-  const barW = W - 140; // space for label
+  const COLS = 10;
+  let out = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.2rem">';
 
-  let out = '<div style="display:flex;flex-direction:column;gap:10px;padding:.5rem 0">';
+  FRANQUIAS.forEach(fra=>{
+    const frColor = FR_COLORS[fra];
+    // Build ordered squares: fill by tipo
+    const squares = [];
+    TIPOS.forEach(tipo=>{
+      const c = counts[fra][tipo];
+      const tColor = TIPO_COLORS[tipo];
+      for(let i=0;i<c.pago;i++) squares.push({color:tColor, tipo, status:'Pago', opacity:1});
+      for(let i=0;i<c.plan;i++) squares.push({color:tColor, tipo, status:'Planejado', opacity:0.3});
+    });
+    const total = squares.length;
+    // Pad to multiple of COLS
+    const rows = Math.ceil(total/COLS) || 1;
+    while(squares.length < rows*COLS) squares.push(null);
 
-  // Totais da regional
-  const totalPago = TIPOS.reduce((s,t)=>s+pago[t], 0);
-  const totalPlan = TIPOS.reduce((s,t)=>s+plan[t], 0);
-  const totalGeral = totalPago + totalPlan;
+    out += '<div style="background:var(--sf2);border:1px solid '+frColor+'44;border-radius:10px;padding:.8rem">';
+    // Header
+    out += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">';
+    out += '<span style="font-size:.78rem;font-weight:700;color:'+frColor+'">'+fra+'</span>';
+    out += '<span style="font-size:.72rem;color:var(--mu)">'+total+' lançamentos</span>';
+    out += '</div>';
+    // Grid
+    out += '<div style="display:grid;grid-template-columns:repeat('+COLS+',1fr);gap:2px">';
+    squares.forEach(sq=>{
+      if(!sq){
+        out += '<div style="aspect-ratio:1;border-radius:2px;background:transparent"></div>';
+      } else {
+        out += '<div style="aspect-ratio:1;border-radius:2px;background:'+sq.color+';opacity:'+sq.opacity+'" title="'+sq.tipo+' — '+sq.status+'"></div>';
+      }
+    });
+    out += '</div>';
 
+    // Mini legend for this franquia
+    const tiposUsed = TIPOS.filter(t=> counts[fra][t].pago+counts[fra][t].plan > 0);
+    if(tiposUsed.length){
+      out += '<div style="display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:.5rem">';
+      tiposUsed.forEach(t=>{
+        const tc = TIPO_COLORS[t];
+        const n  = counts[fra][t].pago + counts[fra][t].plan;
+        const label = t.length > 12 ? t.substring(0,11)+'…' : t;
+        out += '<span style="display:flex;align-items:center;gap:3px;font-size:.6rem;color:var(--mu)">';
+        out += '<span style="width:7px;height:7px;border-radius:1px;background:'+tc+';display:inline-block"></span>';
+        out += label+' <b style="color:var(--wh)">'+n+'</b></span>';
+      });
+      out += '</div>';
+    }
+    out += '</div>';
+  });
+
+  out += '</div>';
+
+  // ── TOTAL REGIONAL waffle ───────────────────────────────────────────────────
+  const totalSquares = [];
   TIPOS.forEach(tipo=>{
-    const p = pago[tipo];
-    const pl = plan[tipo];
-    const total = p + pl;
-    if(total === 0) return;
-
-    const pPct  = (p  / maxVal * 100).toFixed(1);
-    const plPct = (pl / maxVal * 100).toFixed(1);
-    const label = tipo.length > 17 ? tipo.substring(0,16)+'…' : tipo;
-
-    out += '<div style="display:flex;align-items:center;gap:10px">';
-    // Label
-    out += '<div style="width:120px;flex-shrink:0;font-size:.72rem;color:var(--wh);text-align:right;font-weight:600">'+label+'</div>';
-    // Track
-    out += '<div style="flex:1;position:relative;height:28px">';
-
-    // Planejado line (dashed, behind)
-    if(pl > 0){
-      out += '<div style="position:absolute;top:50%;left:0;height:2px;width:'+plPct+'%;transform:translateY(-50%);background:transparent;border-top:2px dashed #8890b0"></div>';
-      // Planejado dot
-      out += '<div style="position:absolute;top:50%;left:'+plPct+'%;transform:translate(-50%,-50%);width:10px;height:10px;border-radius:50%;border:2px solid #8890b0;background:var(--sf2)" title="Planejado: '+pl+'"></div>';
-      // Planejado label
-      out += '<div style="position:absolute;top:50%;left:calc('+plPct+'% + 8px);transform:translateY(-50%);font-size:.62rem;color:#8890b0">'+pl+'</div>';
-    }
-
-    // Pago line (solid)
-    if(p > 0){
-      out += '<div style="position:absolute;top:50%;left:0;height:2px;width:'+pPct+'%;transform:translateY(-50%);background:var(--ac)"></div>';
-      // Pago dot
-      out += '<div style="position:absolute;top:50%;left:'+pPct+'%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--ac);border:2px solid var(--sf)" title="Pago: '+p+'"></div>';
-      // Pago label
-      out += '<div style="position:absolute;top:50%;left:calc('+pPct+'% + 8px);transform:translateY(-50%);font-size:.65rem;color:var(--ac);font-weight:700">'+p+'</div>';
-    }
-
-    out += '</div>';
-    // Total badge
-    out += '<div style="width:28px;flex-shrink:0;font-size:.7rem;font-weight:700;color:var(--wh);text-align:right">'+total+'</div>';
-    out += '</div>';
+    const tColor = TIPO_COLORS[tipo];
+    let pago=0, plan=0;
+    FRANQUIAS.forEach(fra=>{ pago+=counts[fra][tipo].pago; plan+=counts[fra][tipo].plan; });
+    for(let i=0;i<pago;i++) totalSquares.push({color:tColor, tipo, status:'Pago', opacity:1});
+    for(let i=0;i<plan;i++) totalSquares.push({color:tColor, tipo, status:'Planejado', opacity:0.3});
   });
+  const totalGeral = totalSquares.length;
+  const totalCOLS  = 15;
+  const totalRows  = Math.ceil(totalGeral/totalCOLS) || 1;
+  while(totalSquares.length < totalRows*totalCOLS) totalSquares.push(null);
 
+  out += '<div style="background:var(--sf2);border:1px solid var(--ac)44;border-radius:10px;padding:.8rem;margin-top:.4rem">';
+  out += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">';
+  out += '<span style="font-size:.78rem;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:.05em">Total Regional</span>';
+  out += '<span style="font-size:.72rem;color:var(--mu)">'+totalGeral+' lançamentos</span>';
   out += '</div>';
+  out += '<div style="display:grid;grid-template-columns:repeat('+totalCOLS+',1fr);gap:2px">';
+  totalSquares.forEach(sq=>{
+    if(!sq){
+      out += '<div style="aspect-ratio:1;border-radius:2px;background:transparent"></div>';
+    } else {
+      out += '<div style="aspect-ratio:1;border-radius:2px;background:'+sq.color+';opacity:'+sq.opacity+'" title="'+sq.tipo+' — '+sq.status+'"></div>';
+    }
+  });
+  out += '</div>';
+  // Mini legenda total
+  out += '<div style="display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:.5rem">';
+  TIPOS.forEach(t=>{
+    const tc = TIPO_COLORS[t];
+    const n  = FRANQUIAS.reduce((s,f)=>s+counts[f][t].pago+counts[f][t].plan, 0);
+    if(n===0) return;
+    const label = t.length > 14 ? t.substring(0,13)+'…' : t;
+    out += '<span style="display:flex;align-items:center;gap:3px;font-size:.62rem;color:var(--mu)">';
+    out += '<span style="width:7px;height:7px;border-radius:1px;background:'+tc+';display:inline-block"></span>';
+    out += label+' <b style="color:var(--wh)">'+n+'</b></span>';
+  });
+  out += '</div></div>';
 
-  // Linha total regional
-  const pPctT  = (totalPago / maxVal * 100).toFixed(1);
-  const plPctT = (totalPlan / maxVal * 100).toFixed(1);
-  out += '<div style="display:flex;align-items:center;gap:10px;margin-top:4px;padding-top:8px;border-top:1px solid var(--bd)">';
-  out += '<div style="width:120px;flex-shrink:0;font-size:.72rem;color:var(--ac);text-align:right;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Total Regional</div>';
-  out += '<div style="flex:1;position:relative;height:28px">';
-  if(totalPlan > 0){
-    out += '<div style="position:absolute;top:50%;left:0;height:2px;width:'+plPctT+'%;transform:translateY(-50%);border-top:2px dashed #8890b0"></div>';
-    out += '<div style="position:absolute;top:50%;left:'+plPctT+'%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;border:2px solid #8890b0;background:var(--sf2)" title="Planejado: '+totalPlan+'"></div>';
-    out += '<div style="position:absolute;top:50%;left:calc('+plPctT+'% + 8px);transform:translateY(-50%);font-size:.62rem;color:#8890b0">'+totalPlan+'</div>';
-  }
-  if(totalPago > 0){
-    out += '<div style="position:absolute;top:50%;left:0;height:3px;width:'+pPctT+'%;transform:translateY(-50%);background:var(--ac)"></div>';
-    out += '<div style="position:absolute;top:50%;left:'+pPctT+'%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:var(--ac);border:2px solid var(--sf)" title="Pago: '+totalPago+'"></div>';
-    out += '<div style="position:absolute;top:50%;left:calc('+pPctT+'% + 10px);transform:translateY(-50%);font-size:.68rem;color:var(--ac);font-weight:700">'+totalPago+'</div>';
-  }
-  out += '</div>';
-  out += '<div style="width:28px;flex-shrink:0;font-size:.75rem;font-weight:700;color:var(--ac);text-align:right">'+totalGeral+'</div>';
-  out += '</div>';
-
-  // Legend
-  out += '<div style="display:flex;gap:1.2rem;margin-top:.6rem;padding-top:.5rem;border-top:1px solid var(--bd)">';
-  out += '<span style="display:flex;align-items:center;gap:.4rem;font-size:.7rem;color:#8890b0">';
-  out += '<span style="width:20px;height:2px;background:var(--ac);display:inline-block;vertical-align:middle"></span>';
-  out += '<span style="width:10px;height:10px;border-radius:50%;background:var(--ac);display:inline-block"></span> Pago</span>';
-  out += '<span style="display:flex;align-items:center;gap:.4rem;font-size:.7rem;color:#8890b0">';
-  out += '<span style="width:20px;height:0;border-top:2px dashed #8890b0;display:inline-block;vertical-align:middle"></span>';
-  out += '<span style="width:10px;height:10px;border-radius:50%;border:2px solid #8890b0;background:var(--sf2);display:inline-block"></span> Planejado</span>';
+  // Global legend pago vs planejado
+  out += '<div style="display:flex;gap:1.2rem;margin-top:.8rem;padding-top:.6rem;border-top:1px solid var(--bd)">';
+  out += '<span style="display:flex;align-items:center;gap:.4rem;font-size:.7rem;color:var(--mu)"><span style="width:10px;height:10px;border-radius:2px;background:var(--wh);display:inline-block"></span>Pago (sólido)</span>';
+  out += '<span style="display:flex;align-items:center;gap:.4rem;font-size:.7rem;color:var(--mu)"><span style="width:10px;height:10px;border-radius:2px;background:var(--mu);opacity:.4;display:inline-block"></span>Planejado (claro)</span>';
   out += '</div>';
 
   container.innerHTML = out;
